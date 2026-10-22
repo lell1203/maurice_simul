@@ -88,7 +88,7 @@ button{font:inherit;color:inherit}
 .toolbar .lbl{font-size:10.5px;letter-spacing:.08em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
 .toolbar .sep{width:1px;align-self:stretch;background:var(--line2)}
 .voice{flex:1 1 280px;display:flex;gap:6px;min-width:0}
-.voice input[type=text]{flex:1;min-width:0;background:var(--editor);color:var(--fg);border:1px solid var(--line2);padding:5px 9px;font:inherit;font-size:13px}
+.voice input[type=text]{flex:1;min-width:min(320px,100%);background:var(--editor);color:var(--fg);border:1px solid var(--line2);padding:5px 9px;font:inherit;font-size:13px}
 .voice input[type=text]:focus{outline:none;border-color:var(--yellow)}
 .chk{display:flex;gap:4px;align-items:center;font-size:11.5px;color:var(--dim);white-space:nowrap}
 .chk input{accent-color:var(--yellow)}
@@ -119,6 +119,7 @@ button{font:inherit;color:inherit}
 .ln.failed .no{color:var(--err)}
 .k{color:var(--kw)} .v{color:var(--var)} .p{color:var(--fg)} .c{color:var(--cmt);font-style:italic} .f{color:var(--fn)}
 .str{color:var(--str)} .num{color:var(--num)} .bool{color:var(--bool)}
+.s-flash{color:var(--on-yellow);background:var(--yellow);padding:0 6px;border-radius:2px;font-weight:600;white-space:nowrap}
 .tok{font:inherit;background:transparent;border:none;border-bottom:1px dotted transparent;padding:0 1px;margin:0;color:inherit;appearance:none;-webkit-appearance:none;cursor:pointer;border-radius:0}
 .tok:hover,.tok:focus{outline:none;background:var(--yellow-soft);border-bottom-color:var(--yellow)}
 .tok option{background:var(--side);color:var(--fg)}
@@ -411,7 +412,7 @@ body.reduce-fx .glitch .roll{display:none}
   <div class="titlebar">
     <span class="logo" aria-hidden="true"></span>
     <span class="menu"><span>파일</span><span>편집</span><span>보기</span><span>실행</span><span>터미널</span></span>
-    <span class="title"><span id="t-file">renoir_b3.nail</span> — <b>Sisyphe Studio</b> · 르누아르 담당 관리자 콘솔</span>
+    <span class="title"><span id="t-file">lenoir_b3.nail</span> — <b>Sisyphe Studio</b> · 르누아르 담당 관리자 콘솔</span>
     <button class="tb-home" id="b-home" title="일시정지하고 시작 화면으로 (Esc)">⏏ 콘솔 메인</button>
   </div>
 
@@ -436,7 +437,7 @@ body.reduce-fx .glitch .roll{display:none}
 
   <section class="main">
     <div class="tabs" role="tablist">
-      <button class="tab on" id="tab-code" role="tab"><span class="ext" id="tab-ext">{}</span><span id="tab-file">renoir_b3.nail</span><span class="dot" id="tab-dot" hidden></span></button>
+      <button class="tab on" id="tab-code" role="tab"><span class="ext" id="tab-ext">{}</span><span id="tab-file">lenoir_b3.nail</span><span class="dot" id="tab-dot" hidden></span></button>
       <button class="tab" id="tab-man" role="tab"><span class="ext">md</span>콘솔_매뉴얼.md</button>
     </div>
     <div class="toolbar" id="toolbar"></div>
@@ -461,9 +462,9 @@ body.reduce-fx .glitch .roll{display:none}
 
   <footer class="status">
     <span title="근무 일차"><b id="s-day">1</b>일차</span>
-    <span class="accent" title="근무 시계">⏱ <b id="s-clock">09:00</b></span>
+    <span class="accent" title="근무 시계">⏱ <b id="s-clock">09:00</b></span><span class="s-flash" id="s-flash" role="status" hidden></span>
     <span class="speed" id="speed" aria-label="속도">
-      <button data-s="0" title="일시정지">❚❚</button><button data-s="1" class="on">1×</button><button data-s="2">2×</button><button data-s="4">4×</button>
+      <button data-s="0" title="일시정지 (Ctrl+P · Space)">❚❚</button><button data-s="1" class="on" title="1× (1)">1×</button><button data-s="2" title="2× (2)">2×</button><button data-s="4" title="4× (3)">4×</button>
     </span>
     <span id="s-int-wrap">보존 <b id="s-int">100</b></span>
     <span title="점수. 근무 시간에 따라 쌓이고, 고치지 않은 오류가 있으면 덜 쌓인다">경험 통조림 <b id="s-exp">0</b> <span class="rate" id="s-rate"></span></span>
@@ -572,7 +573,7 @@ var Sisyphe = (() => {
     "core/constants.js"(exports, module) {
       "use strict";
       var FACTION = Object.freeze({
-        RENOIR: "RENOIR",
+        LENOIR: "LENOIR",
         // 르누아르 — 검은 신(신부)을 섬기는 쪽
         ROUGE: "ROUGE",
         // 르루주 — 명품관을 점거하고 붉은 신을 키우는 쪽
@@ -595,7 +596,7 @@ var Sisyphe = (() => {
       var FIELD_DOCS = Object.freeze({
         type: "\uC9C0\uAE08 \uC0C1\uD0DC. CALM \xB7 ROWDY \xB7 DISTORTED \xB7 OLD",
         kind: "\uC874\uC7AC\uC758 \uC885\uB958. CUSTOMER \xB7 MANNEQUIN \xB7 FURNITURE \xB7 MODEL \xB7 SCAVENGER \xB7 GIANT \xB7 OLD_BEING \xB7 STRANGER",
-        faction: "\uB4F1\uB85D\uB41C \uC9C4\uC601. RENOIR \xB7 ROUGE \xB7 NONE. \uAD8C\uD55C \uD310\uC815\uC740 \uC774 \uAC12\uC73C\uB85C\uB9CC \uD55C\uB2E4",
+        faction: "\uB4F1\uB85D\uB41C \uC9C4\uC601. LENOIR \xB7 ROUGE \xB7 NONE. \uAD8C\uD55C \uD310\uC815\uC740 \uC774 \uAC12\uC73C\uB85C\uB9CC \uD55C\uB2E4",
         appearsAs: "\uAC89\uBCF4\uAE30 \uC9C4\uC601 (\uC637 \uC0C9)",
         grade: "\uACE0\uAC1D \uB4F1\uAE09(\uACA9) 0~5",
         virtue: "\uBBF8\uB355 true/false",
@@ -902,7 +903,7 @@ var Sisyphe = (() => {
       };
       function defaultGiants() {
         const giants = [
-          new Giant("\uC2E0\uBD80", FACTION.RENOIR, "\uB974\uB204\uC544\uB974 \xB7 \uAC80\uC740 \uC2E0 \xB7 \uAC04\uC218 (\uC2DC\uAC04\uACFC \uCC3D\uC870)"),
+          new Giant("\uC2E0\uBD80", FACTION.LENOIR, "\uB974\uB204\uC544\uB974 \xB7 \uAC80\uC740 \uC2E0 \xB7 \uAC04\uC218 (\uC2DC\uAC04\uACFC \uCC3D\uC870)"),
           new Giant("\uC794\uB290", FACTION.NONE, "\uB974\uCE74\uD0A4 \xB7 \uC124\uACC4\uC790\uC774\uC790 \uC7AC\uB2E8\uC0AC"),
           new Giant("\uD558\uC778\uB9AC\uD788 \uD06C\uB85C\uBA38", FACTION.NONE, "\uB974\uB124\uC559"),
           new Giant("(\uACF5\uC11D)", FACTION.ROUGE, "\uB974\uB8E8\uC8FC")
@@ -926,7 +927,7 @@ var Sisyphe = (() => {
       function defaultJudge(ctx, c, act) {
         switch (act) {
           case ACTION.DEFER:
-            return warn(1, `revelation withheld \u2014 ${c.name} (RENOIR) was left to the system`);
+            return warn(1, `revelation withheld \u2014 ${c.name} (LENOIR) was left to the system`);
           case ACTION.CONTINUE:
             if (c.type === TYPE.DISTORTED) return warn(1, `distorted ${c.name} left unattended`);
             if (c.type === TYPE.ROWDY) return warn(2, `${c.name}'s riot went on unchecked`);
@@ -1023,7 +1024,7 @@ var Sisyphe = (() => {
          *   - 층이 jurisdiction()으로 추가 관할을 정한 경우 (예: ??? 심판의 방의 수감자)
          */
         inAuthority(c) {
-          if (c.faction === "RENOIR") return true;
+          if (c.faction === "LENOIR") return true;
           if (c.type === TYPE.OLD || c.attrs.defined === false) return true;
           return !!this.floor.jurisdiction?.(c);
         }
@@ -1093,7 +1094,7 @@ var Sisyphe = (() => {
                 if (this.integrity <= 0) break;
                 continue;
               }
-              const useGlobal = this.globalRules && c.faction === "RENOIR" && f.revelation?.globalConsole !== false;
+              const useGlobal = this.globalRules && c.faction === "LENOIR" && f.revelation?.globalConsole !== false;
               const gi = useGlobal ? findRule(this.globalRules, c, ctx) : -1;
               (sum.globalHits ??= []).push(gi);
               const i = gi >= 0 ? -1 : findRule(this.rules, c, ctx);
@@ -1101,7 +1102,7 @@ var Sisyphe = (() => {
               const mine = this.inAuthority(c);
               if (gi >= 0) {
                 const act = this.globalRules[gi].do;
-                this.emit(LEVEL.INFO, `${c.describe()}  all_renoir[${gi + 1}] ${act}`);
+                this.emit(LEVEL.INFO, `${c.describe()}  all_lenoir[${gi + 1}] ${act}`);
                 let r = f.judge ? f.judge(ctx, c, act) : null;
                 if (!r) r = defaultJudge(ctx, c, act);
                 this.apply(r, sum);
@@ -1120,7 +1121,7 @@ var Sisyphe = (() => {
                 this.emit(LEVEL.INFO, `${c.describe()}  rule[${i + 1}] ${act}`);
                 let r;
                 if (!mine) {
-                  r = act === ACTION.DEFER ? { cost: 0, level: LEVEL.OK, msg: `${c.name} (${c.faction}) deferred to the system` } : { cost: 2, level: LEVEL.ERR, tag: TAG.BREACH, msg: `PERMISSION DENIED: ${act} \u2192 ${c.name} (faction=${c.faction}) is outside RENOIR authority` };
+                  r = act === ACTION.DEFER ? { cost: 0, level: LEVEL.OK, msg: `${c.name} (${c.faction}) deferred to the system` } : { cost: 2, level: LEVEL.ERR, tag: TAG.BREACH, msg: `PERMISSION DENIED: ${act} \u2192 ${c.name} (faction=${c.faction}) is outside LENOIR authority` };
                   this.apply(r, sum);
                 } else if (act === ACTION.DEFER && c.type === TYPE.OLD) {
                   throw new UnhandledEntityError(c);
@@ -1219,7 +1220,7 @@ var Sisyphe = (() => {
       };
       var RESET = "\x1B[0m";
       var useColor = () => typeof process !== "undefined" && process.stdout && process.stdout.isTTY;
-      var HOST = "sisyphe@renoir";
+      var HOST = "sisyphe@lenoir";
       function format(line, color = useColor()) {
         const text = `[${line.time}] ${line.level.padEnd(5)} ${line.msg}`;
         return color ? `${COLORS[line.level] ?? ""}${text}${RESET}` : text;
@@ -1237,7 +1238,7 @@ var Sisyphe = (() => {
         "[\uACC4\uC2DC \xB7 \uD589\uB3D9 \uBA85\uB839] \uB974\uB204\uC544\uB974\uAC00 \uBAA8\uC5EC \uBA85\uB839\uC744 \uAE30\uB2E4\uB9AC\uBA74 \uD589\uB3D9 \uBA85\uB839 \uC2A4\uD06C\uB9BD\uD2B8\uB97C \uC2E4\uD589\uD55C\uB2E4. \uC2E0\uC559\uC774 \uBC14\uB2E5\uB09C \uB974\uB204\uC544\uB974\uB294 \uBA85\uB839\uC744 \uB4E3\uC9C0 \uC54A\uB294\uB2E4.",
         "\uCE35\uB9C8\uB2E4 \uD560 \uC218 \uC788\uB294 \uC77C\uC774 \uB2E4\uB974\uB2E4. 1F~5F: \uBAA9\uC18C\uB9AC \uC7AC\uC0DD\uACFC \uD589\uB3D9 \uBA85\uB839. B1 \xB7 6F \xB7 ???: \uD589\uB3D9 \uBA85\uB839\uB9CC(\uB974\uB204\uC544\uB974\uC758 \uB9E4\uC7A5\uC774 \uC5C6\uB2E4). B3 \xB7 B2 \xB7 7F: \uC2DC\uC2A4\uD15C \uC720\uC9C0\uB9CC.",
         "B1\uC5D0\uC11C\uB294 \uB418\uC0B4\uC544\uB09C \uB974\uB204\uC544\uB974\uB9CC \uB2E4\uB8E8\uACE0, 6F\uC5D0\uC11C\uB294 \uB7F0\uC6E8\uC774\uC5D0 \uC624\uB978 \uB974\uB8E8\uC8FC\uC5D0 \uB9DE\uC11C\uB3C4\uB85D \uB974\uB204\uC544\uB974 \uBAA8\uB378\uC744 \uCD9C\uACA9\uC2DC\uD0A8\uB2E4.",
-        "[\uC804\uCCB4 \uCF58\uC194] all_renoir.nail\uC740 \uBAA8\uB4E0 \uB974\uB204\uC544\uB974\uC5D0\uAC8C \uB0B4\uB9AC\uB294 \uBA85\uB839\uC774\uB2E4. \uB4F1\uB85D \uC9C4\uC601\uC774 \uB974\uB204\uC544\uB974\uC778 \uC790\uC5D0\uAC8C \uAC01 \uCE35 \uC2A4\uD06C\uB9BD\uD2B8\uBCF4\uB2E4 \uBA3C\uC800 \uD310\uC815\uB41C\uB2E4.",
+        "[\uC804\uCCB4 \uCF58\uC194] all_lenoir.nail\uC740 \uBAA8\uB4E0 \uB974\uB204\uC544\uB974\uC5D0\uAC8C \uB0B4\uB9AC\uB294 \uBA85\uB839\uC774\uB2E4. \uB4F1\uB85D \uC9C4\uC601\uC774 \uB974\uB204\uC544\uB974\uC778 \uC790\uC5D0\uAC8C \uAC01 \uCE35 \uC2A4\uD06C\uB9BD\uD2B8\uBCF4\uB2E4 \uBA3C\uC800 \uD310\uC815\uB41C\uB2E4.",
         "[\uAC04\uC218 \uC544\uBC14\uD0C0] \uC774\uBC29\uC778\uC774 \uC6B4\uBA85\uC744 \uBC97\uC5B4\uB098\uBA74 \uAC04\uC218 \uC544\uBC14\uD0C0\uB97C \uCD9C\uACA9\uC2DC\uCF1C \uD310\uACB0 \uC2A4\uD06C\uB9BD\uD2B8(warden_avatar.nail)\uB85C \uBC14\uB85C\uC7A1\uB294\uB2E4. \uD589\uB3D9 \uBA85\uB839 \uB3C4\uC911\uC758 \uC774\uD0C8\uB3C4 \uAC19\uC740 \uC2A4\uD06C\uB9BD\uD2B8\uB85C \uD310\uACB0\uD55C\uB2E4.",
         "\uD589\uB3D9 \uBA85\uB839\uC758 \uAD8C\uD55C\uC740 \uB4F1\uB85D \uC9C4\uC601(faction)\uC73C\uB85C\uB9CC \uD310\uB2E8\uD55C\uB2E4. \uB974\uB204\uC544\uB974\uAC00 \uC544\uB2CC \uB300\uC0C1\uC740 DEFER\uB85C \uC2DC\uC2A4\uD15C\uC5D0 \uB9E1\uAE34\uB2E4. \uADF8 \uBC16\uC758 \uCC98\uBD84\uC744 \uB0B4\uB9AC\uBA74 PERMISSION DENIED\uAC00 \uAE30\uB85D\uB41C\uB2E4.",
         "\uADDC\uCE59\uC740 \uC704\uC5D0\uC11C\uBD80\uD130 \uD310\uC815\uD558\uBA70, \uCC98\uC74C \uB9DE\uB294 \uD55C \uC904\uB9CC \uC2E4\uD589\uD55C\uB2E4. \uC2DC\uC2A4\uD15C\uC740 \uC218\uAC10\uC790\uB97C \uC8FD\uC77C \uC218 \uC5C6\uB2E4.",
@@ -1266,7 +1267,7 @@ var Sisyphe = (() => {
       var { FACTION, KIND } = require_constants();
       var { Customer } = require_entities();
       var { rule, cond, ref, has, all, any, off, note, clone, findRule, countPatched, validate } = require_rules();
-      var { RENOIR: N, ROUGE: R, NONE } = FACTION;
+      var { LENOIR: N, ROUGE: R, NONE } = FACTION;
       var P = (o) => new Customer(o);
       var STORAGE_LABEL = { MEMORY: "\uAE30\uC5B5 \uC601\uC5ED", ITEM: "\uC544\uC774\uD15C \uC601\uC5ED", FATE: "\uC6B4\uBA85 \uAE30\uB85D" };
       var FAULTS = [
@@ -1758,9 +1759,9 @@ var Sisyphe = (() => {
             {
               id: "case",
               name: "\uB300\uC18C\uBB38\uC790 \uC2E4\uC218",
-              concept: '"renoir"\uC640 "RENOIR"\uB294 \uB2E4\uB974\uB2E4',
+              concept: '"lenoir"\uC640 "LENOIR"\uB294 \uB2E4\uB974\uB2E4',
               mutate: (rs) => {
-                rs[2] = rule(cond("faction", "==", "renoir"), "TAG_BLACK");
+                rs[2] = rule(cond("faction", "==", "lenoir"), "TAG_BLACK");
                 return rs;
               }
             }
@@ -2388,7 +2389,7 @@ var Sisyphe = (() => {
       var { rule, cond, any, note } = require_rules();
       var { ok, warn, err } = require_judge();
       var { stranger } = require_warden();
-      var { RENOIR: N, ROUGE: R, NONE } = FACTION;
+      var { LENOIR: N, ROUGE: R, NONE } = FACTION;
       var RISK = 2;
       var REBORN = (deaths, o = {}) => new Customer({ floor: "B1", dest: "1F", faction: N, grade: 1, ...o, attrs: { deaths } });
       var ANEW = (deaths) => new Customer({ floor: "B1", dest: "B1", faction: NONE, appearsAs: N, grade: 0, attrs: { deaths, formerFaction: N } });
@@ -2430,13 +2431,13 @@ var Sisyphe = (() => {
             if (risky) return err(3, `${c.name} distorted on the way up to 1F (deaths=${c.attrs.deaths})`);
             ctx.state.returned++;
             c.floor = "1F";
-            return ok(`${c.name} returned to the Renoir hall on 1F by the black god's authority  canned experience +1`, 1);
+            return ok(`${c.name} returned to the Lenoir hall on 1F by the black god's authority  canned experience +1`, 1);
           }
           if (act === ACTION.ISOLATE && risky) {
             ctx.state.quarantined++;
             return ok(`${c.name} isolated before the distortion could surface  (deaths=${c.attrs.deaths})`);
           }
-          if (act === ACTION.CONTINUE) return warn(1, `${c.name} was left wandering B1 \u2014 there is no Renoir hall underground`);
+          if (act === ACTION.CONTINUE) return warn(1, `${c.name} was left wandering B1 \u2014 there is no Lenoir hall underground`);
           return null;
         },
         onShiftEnd(ctx) {
@@ -2444,7 +2445,7 @@ var Sisyphe = (() => {
           ctx.emit("BC", `\uBD80\uD65C \uB8E8\uD2F4: \uB418\uC0B4\uC544\uB09C \uC790 ${s.respawned}. 1F\uB85C \uB3CC\uC544\uAC04 \uB974\uB204\uC544\uB974 ${s.returned}, \uACA9\uB9AC ${s.quarantined}.`);
         },
         stage: {
-          file: "renoir_b1.nail",
+          file: "lenoir_b1.nail",
           regulations: [
             "\uBD80\uD65C \uC9C0\uC810 \xB7 \uB974\uB204\uC544\uB974 \uC6B4\uC6A9 \uC9C0\uCE68",
             "1. \uC9C0\uD558\uCE35\uC5D0\uB294 \uB974\uB204\uC544\uB974\uC758 \uB9E4\uC7A5\uC774 \uC5C6\uB2E4. B1\uC5D0\uC11C\uB294 \uB418\uC0B4\uC544\uB09C \uB974\uB204\uC544\uB974\uB9CC \uB2E4\uB8EC\uB2E4.",
@@ -2453,7 +2454,7 @@ var Sisyphe = (() => {
             "4. \uB098\uBA38\uC9C0 \uB974\uB204\uC544\uB974\uB294 \uAD8C\uD55C\uC73C\uB85C 1F \uB974\uB204\uC544\uB974 \uCEE8\uD15C\uD3EC\uB7EC\uB9AC\uAD00\uC5D0 \uB3CC\uB824\uBCF4\uB0B8\uB2E4(ELEVATE). \uB09C\uB3D9 \uB974\uB204\uC544\uB974\uB294 ISOLATE."
           ],
           correct: [
-            note("renoir_b1.nail \xB7 B1\uC5D0\uC11C \uB2E4\uC2DC \uD0DC\uC5B4\uB09C \uB974\uB204\uC544\uB974"),
+            note("lenoir_b1.nail \xB7 B1\uC5D0\uC11C \uB2E4\uC2DC \uD0DC\uC5B4\uB09C \uB974\uB204\uC544\uB974"),
             note("\u2500\u2500 \uAD8C\uD55C \uD655\uC778: \uC2E0\uBD84\uC744 \uBC84\uB9B0 \uC790\uB294 \uC9C0\uAE08\uC758 \uC9C4\uC601\uB9CC \uBCF8\uB2E4 \u2500\u2500"),
             rule(cond("faction", "!=", N), ACTION.DEFER),
             rule(cond("type", "==", "ROWDY"), ACTION.ISOLATE),
@@ -2522,7 +2523,7 @@ var Sisyphe = (() => {
       var { Customer } = require_entities();
       var { rule, cond, all, any, note } = require_rules();
       var { ok, warn, complaint } = require_judge();
-      var { RENOIR: N, ROUGE: R, NONE } = FACTION;
+      var { LENOIR: N, ROUGE: R, NONE } = FACTION;
       var SHIFT_AT = 6;
       var INTRUSIONS = { 3: 2, 8: 1 };
       var C = (style, o = {}) => new Customer({ floor: "1F", dest: "1F", faction: N, grade: 2, ...o, attrs: { style } });
@@ -2545,7 +2546,7 @@ var Sisyphe = (() => {
           RESTYLE: "\uB974\uB204\uC544\uB974\uB97C \uC9C0\uAE08 \uC720\uD589\uC73C\uB85C \uAC08\uC544\uC785\uD78C\uB2E4. \uC774\uBBF8 \uC720\uD589\uC5D0 \uB9DE\uC73C\uBA74 \uB3D9\uC694"
         },
         fieldDocs: {
-          "attr.style": "\uCC28\uB9BC\uC758 \uC720\uD589 \uACC4\uC5F4. RENOIR \xB7 ROUGE",
+          "attr.style": "\uCC28\uB9BC\uC758 \uC720\uD589 \uACC4\uC5F4. LENOIR \xB7 ROUGE",
           trendMatch: "\uACC4\uC0B0 \uD544\uB4DC. \uC9C0\uAE08 \uC720\uD589\uACFC \uCC28\uB9BC\uC774 \uB9DE\uB294\uAC00 true/false",
           rougeInHall: "\uACC4\uC0B0 \uD544\uB4DC. \uC9C0\uAE08 \uB974\uB204\uC544\uB974 \uAD00 \uC548\uC5D0 \uB974\uB8E8\uC8FC\uAC00 \uC788\uB294\uAC00 true/false"
         },
@@ -2576,7 +2577,7 @@ var Sisyphe = (() => {
             if (c.grade < 2) return warn(2, `${c.name} was too weak and got beaten back`);
             s.intruders--;
             s.expelled++;
-            return ok(`${c.name} drove a Rouge customer out of the Renoir hall  (left: ${s.intruders})  canned experience +1`, 1);
+            return ok(`${c.name} drove a Rouge customer out of the Lenoir hall  (left: ${s.intruders})  canned experience +1`, 1);
           }
           if (act === "RESTYLE") {
             if (match) return complaint(`${c.name} was already in ${s.trend}`);
@@ -2586,7 +2587,7 @@ var Sisyphe = (() => {
           }
           if (act === ACTION.CONTINUE) {
             if (!match) return warn(2, `${c.name} shamed for wearing last trend (${c.attrs.style})`);
-            if (s.intruders > 0 && c.grade >= 2) return warn(1, `${c.name} stood by while Rouge occupied the Renoir hall`);
+            if (s.intruders > 0 && c.grade >= 2) return warn(1, `${c.name} stood by while Rouge occupied the Lenoir hall`);
           }
           return null;
         },
@@ -2595,7 +2596,7 @@ var Sisyphe = (() => {
           ctx.emit("BC", `1F \uBC29\uC1A1: \uCD95\uCD9C ${s.expelled}, \uAD00\uC5D0 \uB0A8\uC740 \uB974\uB8E8\uC8FC ${s.intruders}, \uAC08\uC544\uC785\uD78C \uB974\uB204\uC544\uB974 ${s.restyled}.`);
         },
         stage: {
-          file: "renoir_1f.nail",
+          file: "lenoir_1f.nail",
           regulations: [
             "\uBDF0\uD2F0\xB7\uCEE8\uD15C\uD3EC\uB7EC\uB9AC\uAD00 \xB7 \uB974\uB204\uC544\uB974 \uC6B4\uC6A9 \uC9C0\uCE68",
             "1. \uAD8C\uD55C\uC740 \uB4F1\uB85D \uC9C4\uC601(faction)\uC73C\uB85C\uB9CC \uD310\uB2E8\uD55C\uB2E4. \uAC80\uC740 \uCC9C\uC744 \uAC78\uCE5C \uC90D\uB294 \uC790\uB294 \uAD8C\uD55C \uBC16\uC774\uB2E4.",
@@ -2604,7 +2605,7 @@ var Sisyphe = (() => {
             "4. \uB09C\uB3D9 \uB974\uB204\uC544\uB974\uB294 ISOLATE."
           ],
           correct: [
-            note("renoir_1f.nail \xB7 \uCEE8\uD15C\uD3EC\uB7EC\uB9AC\uAD00\uC758 \uB974\uB204\uC544\uB974"),
+            note("lenoir_1f.nail \xB7 \uCEE8\uD15C\uD3EC\uB7EC\uB9AC\uAD00\uC758 \uB974\uB204\uC544\uB974"),
             note("\u2500\u2500 \uAD8C\uD55C \uD655\uC778: \uB4F1\uB85D \uC9C4\uC601\uB9CC \uBCF8\uB2E4 \u2500\u2500"),
             rule(cond("faction", "!=", N), ACTION.DEFER),
             note("\u2500\u2500 \uC0C1\uD0DC \uC774\uC0C1 \u2500\u2500"),
@@ -2675,7 +2676,7 @@ var Sisyphe = (() => {
       var { FloorManager, Customer } = require_entities();
       var { rule, cond, has, all, any, off, note } = require_rules();
       var { ok, warn, err, complaint } = require_judge();
-      var { RENOIR: N, ROUGE: R } = FACTION;
+      var { LENOIR: N, ROUGE: R } = FACTION;
       var RESIN = "\uD669\uAE08\uC1A1\uC9C4";
       var RAID_AT = 5;
       var C = (grade, o = {}) => new Customer({ floor: "1F", dest: "2F", faction: N, grade, ...o });
@@ -2741,7 +2742,7 @@ var Sisyphe = (() => {
           ctx.emit("BC", `\uBA85\uD488\uAD00 \uC55E: \uC2B5\uACA9 ${s.raiders}, \uC1A1\uC9C4 \uC218\uD638 ${s.guards}, \uC4F0\uB7EC\uC9C4 \uB974\uB204\uC544\uB974 ${s.fallen}.`);
         },
         stage: {
-          file: "renoir_2f.nail",
+          file: "lenoir_2f.nail",
           regulations: [
             "\uBA85\uD488\uAD00 \xB7 \uB974\uB204\uC544\uB974 \uC6B4\uC6A9 \uC9C0\uCE68 (\uD604\uC7AC \uB974\uB8E8\uC8FC \uC810\uAC70)",
             "1. \uBA85\uD488\uAD00 \uC548\uC758 \uB974\uB8E8\uC8FC\uB294 \uAD8C\uD55C \uBC16\uC774\uB2E4(DEFER).",
@@ -2750,7 +2751,7 @@ var Sisyphe = (() => {
             "4. \uB09C\uB3D9 \uB974\uB204\uC544\uB974\uB294 ISOLATE."
           ],
           correct: [
-            note("renoir_2f.nail \xB7 \uBA85\uD488\uAD00 \uC55E\uC758 \uB974\uB204\uC544\uB974"),
+            note("lenoir_2f.nail \xB7 \uBA85\uD488\uAD00 \uC55E\uC758 \uB974\uB204\uC544\uB974"),
             note("\u2500\u2500 \uAD8C\uD55C \uD655\uC778 \u2500\u2500"),
             rule(cond("faction", "!=", N), ACTION.DEFER),
             note("\u2500\u2500 \uC0C1\uD0DC \uC774\uC0C1 \u2500\u2500"),
@@ -2823,7 +2824,7 @@ var Sisyphe = (() => {
       var { rule, cond, any, note } = require_rules();
       var { ok, warn, complaint } = require_judge();
       var { stranger } = require_warden();
-      var { RENOIR: N, ROUGE: R } = FACTION;
+      var { LENOIR: N, ROUGE: R } = FACTION;
       var BROADCAST = { start: 4, length: 3 };
       var C = (zone, o = {}) => {
         const c = new Customer({ floor: "3F", dest: "3F", faction: N, grade: 2, ...o, attrs: { zone, role: "FOLLOWER", ...o.attrs ?? {} } });
@@ -2897,7 +2898,7 @@ var Sisyphe = (() => {
           ctx.emit("BC", `\uB0AD\uB3C5\uC790\uB294 \uC624\uB298\uB3C4 \uBA48\uCD94\uC9C0 \uC54A\uC558\uB2E4. \uB4E4\uB72C \uB974\uB204\uC544\uB974 ${s.agitated}, \uC218\uC120 ${s.stitched}, \uC804\uD574\uC9C4 \uACC4\uC2DC ${s.proclaimed}.`);
         },
         stage: {
-          file: "renoir_3f.nail",
+          file: "lenoir_3f.nail",
           regulations: [
             "3\uCE35 \xB7 \uB974\uB204\uC544\uB974 \uC6B4\uC6A9 \uC9C0\uCE68",
             "1. \uB0AD\uB3C5\uC790\uC758 \uBAA9\uC18C\uB9AC\uB294 \uB974\uB204\uC544\uB974\uB97C \uADF8 \uC790\uB9AC\uC5D0\uC11C \uB4E4\uB728\uAC8C \uD55C\uB2E4. \uC785\uC7A5 \uB4F1\uB85D \uAE30\uB85D\uC774 \uC544\uB2C8\uB77C \uD604\uC7AC \uC0C1\uD0DC\uB85C \uD310\uB2E8\uD55C\uB2E4.",
@@ -2906,7 +2907,7 @@ var Sisyphe = (() => {
             "4. \uB974\uB8E8\uC8FC\uC640 \uB0AD\uB3C5\uC790\uB294 \uAD8C\uD55C \uBC16\uC774\uB2E4."
           ],
           correct: [
-            note("renoir_3f.nail \xB7 3\uCE35\uC758 \uB974\uB204\uC544\uB974"),
+            note("lenoir_3f.nail \xB7 3\uCE35\uC758 \uB974\uB204\uC544\uB974"),
             note("\u2500\u2500 \uAD8C\uD55C \uD655\uC778 \u2500\u2500"),
             rule(cond("faction", "!=", N), ACTION.DEFER),
             note("\u2500\u2500 \uB0AD\uB3C5\uC790\uC758 \uBAA9\uC18C\uB9AC\uC5D0 \uD754\uB4E4\uB9B0 \uB974\uB204\uC544\uB974: '\uC9C0\uAE08' \uC0C1\uD0DC\uB85C \uD310\uB2E8 \u2500\u2500"),
@@ -2978,7 +2979,7 @@ var Sisyphe = (() => {
       var { FloorManager, Customer } = require_entities();
       var { rule, cond, has, all, any, off, note } = require_rules();
       var { ok, warn, err, complaint } = require_judge();
-      var { RENOIR: N, ROUGE: R, NONE } = FACTION;
+      var { LENOIR: N, ROUGE: R, NONE } = FACTION;
       var SHOES = "\uD2B9\uBCC4\uD55C \uAD6C\uB450";
       var NURSERY = "\uBBF8\uC544 \uBCF4\uD638\uC2E4";
       var BAGS = "\uB974\uB8E8\uC8FC \uAC00\uBC29\uAD00";
@@ -3018,7 +3019,7 @@ var Sisyphe = (() => {
             return complaint(`${c.name} was recalled from ${zone} for no reason`);
           }
           if (act === ACTION.CONTINUE) {
-            if (zone === BAGS) return err(3, `${c.name} (RENOIR) walked into ${BAGS} \u2014 ambushed by Rouge staff`);
+            if (zone === BAGS) return err(3, `${c.name} (LENOIR) walked into ${BAGS} \u2014 ambushed by Rouge staff`);
             if (lost) return warn(2, `${c.name} wandered the 4F corridor searching for a hidden door they cannot open`);
             if (zone === NURSERY) {
               ctx.state.found++;
@@ -3031,7 +3032,7 @@ var Sisyphe = (() => {
           ctx.emit("BC", `\uD589\uBCF5\uD55C \uC637\uC7A5: \uC624\uB298 \uBB3C\uB7EC\uAC04 \uAC80\uC740 \uC190\uB2D8 ${ctx.state.withdrawn}. \uC228\uACA8\uC9C4 \uBB38\uC744 \uCC3E\uC740 \uC190\uB2D8 ${ctx.state.found}. \uBAA8\uB450 \uD589\uBCF5\uD558\uAE38.`);
         },
         stage: {
-          file: "renoir_4f.nail",
+          file: "lenoir_4f.nail",
           regulations: [
             "4\uCE35 \xB7 \uB974\uB204\uC544\uB974 \uC6B4\uC6A9 \uC9C0\uCE68",
             "1. \uAD8C\uD55C\uC740 \uB4F1\uB85D \uC9C4\uC601(faction)\uC73C\uB85C\uB9CC \uD310\uB2E8\uD55C\uB2E4. \uAC00\uAD6C\uAC00 \uB41C \uC790\uB294 \uAC80\uC740 \uCC9C\uC744 \uC50C\uC6E0\uC5B4\uB3C4 \uAD8C\uD55C \uBC16\uC774\uB2E4.",
@@ -3040,7 +3041,7 @@ var Sisyphe = (() => {
             "4. \uB09C\uB3D9 \uB974\uB204\uC544\uB974\uB294 ISOLATE."
           ],
           correct: [
-            note("renoir_4f.nail \xB7 4\uCE35\uC758 \uB974\uB204\uC544\uB974"),
+            note("lenoir_4f.nail \xB7 4\uCE35\uC758 \uB974\uB204\uC544\uB974"),
             note("\u2500\u2500 \uAD8C\uD55C \uD655\uC778: \uAC00\uAD6C\uAC00 \uB41C \uC790\uB294 \uB354 \uC774\uC0C1 \uC2E0\uB3C4\uAC00 \uC544\uB2C8\uB2E4 \u2500\u2500"),
             rule(cond("faction", "!=", N), ACTION.DEFER),
             rule(cond("type", "==", "ROWDY"), ACTION.ISOLATE),
@@ -3110,7 +3111,7 @@ var Sisyphe = (() => {
       var { Customer } = require_entities();
       var { rule, cond, any, note } = require_rules();
       var { ok, warn, err, complaint } = require_judge();
-      var { RENOIR: N, ROUGE: R, NONE } = FACTION;
+      var { LENOIR: N, ROUGE: R, NONE } = FACTION;
       var PUI_AT = 5;
       var TABLE = (o = {}) => new Customer({ floor: "5F", dest: "5F", faction: N, grade: 4, virtue: true, items: ["\uD669\uAE08\uAC00\uC8FD"], ...o, attrs: { position: "TABLE" } });
       var BELOW = (o = {}) => new Customer({ floor: "4F", dest: "5F", faction: N, grade: 3, virtue: false, ...o, attrs: { position: "BELOW" } });
@@ -3170,7 +3171,7 @@ var Sisyphe = (() => {
           ctx.emit("BC", `5\uCE35: \uAD8C\uD55C\uC73C\uB85C \uC62C\uB77C\uC628 \uB974\uB204\uC544\uB974 ${s.elevated}, \uC0AC\uB0E5\uC5D0 \uB098\uC120 \uB974\uB204\uC544\uB974 ${s.hunters}.`);
         },
         stage: {
-          file: "renoir_5f.nail",
+          file: "lenoir_5f.nail",
           regulations: [
             "\uB808\uC2A4\uD1A0\uB791 \xB7 \uB974\uB204\uC544\uB974 \uC6B4\uC6A9 \uC9C0\uCE68",
             "1. \uB808\uC2A4\uD1A0\uB791\uC758 \uB2E4\uB978 \uC190\uB2D8\uC740 \uAD8C\uD55C \uBC16\uC774\uB2E4(DEFER).",
@@ -3179,7 +3180,7 @@ var Sisyphe = (() => {
             "4. \uB09C\uB3D9 \uB974\uB204\uC544\uB974\uB294 ISOLATE."
           ],
           correct: [
-            note("renoir_5f.nail \xB7 5\uCE35\uC758 \uB974\uB204\uC544\uB974"),
+            note("lenoir_5f.nail \xB7 5\uCE35\uC758 \uB974\uB204\uC544\uB974"),
             note("\u2500\u2500 \uAD8C\uD55C \uD655\uC778 \u2500\u2500"),
             rule(cond("faction", "!=", N), ACTION.DEFER),
             rule(cond("type", "==", "ROWDY"), ACTION.ISOLATE),
@@ -3251,7 +3252,7 @@ var Sisyphe = (() => {
       var { rule, cond, all, any, note } = require_rules();
       var { ok, warn, err } = require_judge();
       var { stranger } = require_warden();
-      var { RENOIR: N, ROUGE: R, NONE } = FACTION;
+      var { LENOIR: N, ROUGE: R, NONE } = FACTION;
       var MIN_STAMINA = 30;
       var ROUGE_TAKES_RUNWAY = { 2: 2, 7: 1 };
       var C = (o = {}) => new Customer({ floor: "6F", dest: "6F", faction: N, grade: 5, virtue: true, ...o });
@@ -3303,7 +3304,7 @@ var Sisyphe = (() => {
             return ok(`${c.name} took the runway back from a Rouge model  (Rouge left: ${s.rouge})  canned experience +1`, 1);
           }
           if (act === ACTION.CONTINUE) {
-            if (c.dest === "7F") return err(3, `${c.name} (RENOIR) climbed into the bright room and was not seen again`);
+            if (c.dest === "7F") return err(3, `${c.name} (LENOIR) climbed into the bright room and was not seen again`);
             if (s.rouge > 0 && fit) return warn(1, `${c.name} watched the Rouge hold the runway`);
           }
           return null;
@@ -3313,7 +3314,7 @@ var Sisyphe = (() => {
           ctx.emit("BC", `\uB7F0\uC6E8\uC774: \uB418\uCC3E\uC740 \uC790\uB9AC ${s.repelled}, \uB7F0\uC6E8\uC774\uC5D0 \uB0A8\uC740 \uB974\uB8E8\uC8FC ${s.rouge}, \uB5A8\uC5B4\uC9C4 \uB974\uB204\uC544\uB974 ${s.fallen}.`);
         },
         stage: {
-          file: "renoir_6f.nail",
+          file: "lenoir_6f.nail",
           regulations: [
             "\uB7F0\uC6E8\uC774 \xB7 \uB974\uB204\uC544\uB974 \uCD9C\uACA9 \uC9C0\uCE68",
             "1. 6\uCE35\uC5D0\uB294 \uB974\uB204\uC544\uB974\uC758 \uB9E4\uC7A5\uC774 \uC5C6\uB2E4. \uBAA9\uC18C\uB9AC\uB294 \uB4E4\uB824\uC8FC\uC9C0 \uC54A\uACE0, \uCD9C\uACA9 \uBA85\uB839\uB9CC \uB0B4\uB9B0\uB2E4.",
@@ -3322,7 +3323,7 @@ var Sisyphe = (() => {
             "4. 7F\uB294 \uC794\uB290\uC758 \uBC1D\uC740 \uBC29\uC774\uB2E4. 7F\uB85C \uAC00\uB824\uB294 \uB974\uB204\uC544\uB974\uB294 \uBB3C\uB9B0\uB2E4(WITHDRAW). \uB09C\uB3D9 \uB974\uB204\uC544\uB974\uB294 ISOLATE."
           ],
           correct: [
-            note("renoir_6f.nail \xB7 \uB7F0\uC6E8\uC774 \uCD9C\uACA9 \uBA85\uB839"),
+            note("lenoir_6f.nail \xB7 \uB7F0\uC6E8\uC774 \uCD9C\uACA9 \uBA85\uB839"),
             note("\u2500\u2500 \uAD8C\uD55C \uD655\uC778 \u2500\u2500"),
             rule(cond("faction", "!=", N), ACTION.DEFER),
             rule(cond("type", "==", "ROWDY"), ACTION.ISOLATE),
@@ -3412,7 +3413,7 @@ var Sisyphe = (() => {
       var { rule, cond, all, any, note } = require_rules();
       var { ok, warn, err, complaint } = require_judge();
       var { stranger } = require_warden();
-      var { RENOIR: N, ROUGE: R, NONE } = FACTION;
+      var { LENOIR: N, ROUGE: R, NONE } = FACTION;
       var REPEAT_LIMIT = 2;
       var REWINDS_PER_DAY = 2;
       var P = (offense, repeats = 0, o = {}) => new Customer({ floor: "???", dest: "???", faction: NONE, grade: 1, ...o, attrs: { offense, repeats, escaping: false, ...o.attrs ?? {} } });
@@ -3637,7 +3638,7 @@ var Sisyphe = (() => {
         const floor = registry[floorId];
         if (!floor.revelation?.command) return { rejected: true, errors: [`${floorId}\uC5D0\uB294 \uB974\uB204\uC544\uB974\uC5D0\uAC8C \uB0B4\uB9B4 \uD589\uB3D9 \uBA85\uB839\uC774 \uC5C6\uB2E4`] };
         const errors = rules.validate(playerRules, actionsOf(floor));
-        if (globalRules) errors.push(...rules.validate(globalRules, GLOBAL_ACTIONS).map((e) => "all_renoir.nail " + e));
+        if (globalRules) errors.push(...rules.validate(globalRules, GLOBAL_ACTIONS).map((e) => "all_lenoir.nail " + e));
         if (errors.length) return { rejected: true, errors };
         const sys = new SisypheSystem({ registry, floorId, rules: playerRules, seed, warden, wardenRules, globalRules });
         const log = [];
@@ -3677,10 +3678,10 @@ var Sisyphe = (() => {
         return c;
       }
       var GLOBAL_ACTIONS = [constants.ACTION.DEFER, constants.ACTION.CONTINUE, constants.ACTION.ISOLATE];
-      var GLOBAL_FILE = "all_renoir.nail";
+      var GLOBAL_FILE = "all_lenoir.nail";
       function starterGlobal() {
         return [
-          rules.note("all_renoir.nail \xB7 \uBAA8\uB4E0 \uB974\uB204\uC544\uB974\uC5D0\uAC8C \uB0B4\uB9AC\uB294 \uBA85\uB839"),
+          rules.note("all_lenoir.nail \xB7 \uBAA8\uB4E0 \uB974\uB204\uC544\uB974\uC5D0\uAC8C \uB0B4\uB9AC\uB294 \uBA85\uB839"),
           rules.note("\uB4F1\uB85D \uC9C4\uC601\uC774 \uB974\uB204\uC544\uB974\uC778 \uC790\uC5D0\uAC8C\uB9CC, \uAC01 \uCE35 \uC2A4\uD06C\uB9BD\uD2B8\uBCF4\uB2E4 \uBA3C\uC800 \uD310\uC815\uB41C\uB2E4"),
           rules.note("\uC8FC\uC758: '\uB098\uBA38\uC9C0 \uC804\uBD80(true)' \uC904\uC744 \uB450\uBA74 \uCE35 \uC2A4\uD06C\uB9BD\uD2B8\uAC00 \uD558\uB098\uB3C4 \uC2E4\uD589\uB418\uC9C0 \uC54A\uB294\uB2E4"),
           rules.rule(rules.cond("type", "==", "ROWDY"), constants.ACTION.ISOLATE)
@@ -3831,7 +3832,7 @@ var Sisyphe = (() => {
     let scripts = {};
     try {
       const raw = localStorage.getItem("sisyphe-scripts-v2") || "{}";
-      const moved = raw.replace(/"twist"/g, '"distortion"').replace(/"TWISTED"/g, '"DISTORTED"')
+      const moved = raw.replace(/RENOIR/g, "LENOIR").replace(/Renoir/g, "Lenoir").replace(/renoir/g, "lenoir").replace(/"twist"/g, '"distortion"').replace(/"TWISTED"/g, '"DISTORTED"')
         .replace(/상편 계시: 르루주/g, "르루주 축출 계시: 르루주").replace(/상편 계시: /g, "수호 계시: ")
         .replace(/중편 계시: /g, "습격 계시: ").replace(/── 중편: 뿌이가/g, "── 사냥 계시: 뿌이가");
       scripts = JSON.parse(moved) || {};
@@ -3996,7 +3997,7 @@ var Sisyphe = (() => {
   /** 전체 콘솔: 명령을 기다리는 모든 층에 한 번에 */
   async function runAllNow() {
     showPanel("term");
-    prompt("./run_all_renoir");
+    prompt("./run_all_lenoir");
     const waiting = CMD_FLOORS.map(f => G.floors[f.id]).filter(st => st.request);
     if (!waiting.length) { out("WARN  지금 명령을 기다리는 르누아르가 없다", "L-WARN"); return idle(); }
     G.busy = true; lockUI(true); hits = new Set();
@@ -4392,11 +4393,13 @@ var Sisyphe = (() => {
     if (s === "false") return false;
     return s.replace(/^["']|["']$/g, "");
   }
+  /** 고정폭 글꼴에서 글자 폭: 한글 · 한자 · 전각 문자는 2칸 */
+  const chw = s => [...String(s)].reduce((n, c) => n + (/[\u1100-\u115f\u2e80-\ua4cf\uac00-\ud7a3\uf900-\ufaff\ufe30-\ufe4f\uff00-\uff60\uffe0-\uffe6]/.test(c) ? 2 : 1), 0);
   const opts = (list, cur) => list.map(o => `<option value="${esc(o)}"${String(o) === String(cur) ? " selected" : ""}>${esc(o)}</option>`).join("");
-  const sel = (cls, data, list, cur, label) => `<select class="tok ${cls}" ${data} aria-label="${label}" style="width:${String(cur).length + 1.6}ch">${opts(list, cur)}</select>`;
+  const sel = (cls, data, list, cur, label) => `<select class="tok ${cls}" ${data} aria-label="${label}" style="width:${chw(cur) + 1.6}ch">${opts(list, cur)}</select>`;
   const inp = (data, v, label) => {
     const raw = v === undefined || v === null ? "" : String(v), q = typeof v === "string";
-    const box = `<input class="tok ${tokClass(v)}" ${data} value="${esc(raw)}" aria-label="${label}${q ? " (글자)" : ""}" spellcheck="false" style="width:${Math.max(1, raw.length) + 1}ch">`;
+    const box = `<input class="tok ${tokClass(v)}" ${data} value="${esc(raw)}" aria-label="${label}${q ? " (글자)" : ""}" spellcheck="false" style="width:${Math.max(1, chw(raw)) + 1}ch">`;
     return q ? `<span class="tq">"</span>${box}<span class="tq">"</span>` : box;
   };
   const atomsOf = w => w.all ? w.all : [w];
@@ -4533,7 +4536,7 @@ var Sisyphe = (() => {
     e.preventDefault(); focusAt(lineIndex(ln), 0);
   });
   // 입력 칸은 치는 만큼 넓어진다
-  $("code").addEventListener("input", e => { if (e.target.matches("input.tok")) e.target.style.width = (e.target.value.length + 1) + "ch"; });
+  $("code").addEventListener("input", e => { if (e.target.matches("input.tok")) e.target.style.width = (Math.max(1, chw(e.target.value)) + 1) + "ch"; });
 
   /** 입력 칸에 친 값이 아직 반영되지 않았으면 먼저 반영한다 */
   let applyingEdit = false;
@@ -4775,7 +4778,7 @@ var Sisyphe = (() => {
 
     if (G.view.kind === "global") {
       const waiting = CMD_FLOORS.filter(f => G.floors[f.id].request);
-      if (!setHTML($("toolbar"), `<div class="grp"><span class="lbl">전체 콘솔</span><button class="tool primary" id="b-all" ${waiting.length ? "" : "disabled"}>${runIcon}./run_all_renoir</button><button class="tool" id="b-greset" title="전체 콘솔을 처음 뼈대로">초기화</button></div>`
+      if (!setHTML($("toolbar"), `<div class="grp"><span class="lbl">전체 콘솔</span><button class="tool primary" id="b-all" ${waiting.length ? "" : "disabled"}>${runIcon}./run_all_lenoir</button><button class="tool" id="b-greset" title="전체 콘솔을 처음 뼈대로">초기화</button></div>`
         + `<div class="notice">명령을 기다리는 층 <b>${waiting.length}개</b>${waiting.length ? " · " + waiting.map(f => esc(f.id)).join(", ") : ""} · 한 번에 실행하면 각 층에서 전체 콘솔 → 층 스크립트 순으로 판정한다. 처분은 DEFER · CONTINUE · ISOLATE만 쓸 수 있다</div>`, viewKey())) return;
       $("b-all").onclick = runAllNow;
       $("b-greset").onclick = () => { if (G.busy) return; G.global.script = S.starterGlobal(); edited(); prompt(`git checkout -- ${S.GLOBAL_FILE}`); out("전체 콘솔을 처음 뼈대로 되돌렸다", "L-DIM"); idle(); };
@@ -4828,13 +4831,13 @@ var Sisyphe = (() => {
   }
 
     function drawCrumbs() {
-    if (!$("man").hidden) { $("crumbs").innerHTML = `renoir-console <span class="sep">›</span> <b>콘솔_매뉴얼.md</b>`; return; }
-    if (G.view.kind === "global") { $("crumbs").innerHTML = `renoir-console <span class="sep">›</span> <b>${esc(S.GLOBAL_FILE)}</b>`; return; }
-    if (G.view.kind === "warden") { $("crumbs").innerHTML = `renoir-console <span class="sep">›</span> avatars <span class="sep">›</span> <b>${esc(WARDEN.stage.file)}</b>`; return; }
+    if (!$("man").hidden) { $("crumbs").innerHTML = `lenoir-console <span class="sep">›</span> <b>콘솔_매뉴얼.md</b>`; return; }
+    if (G.view.kind === "global") { $("crumbs").innerHTML = `lenoir-console <span class="sep">›</span> <b>${esc(S.GLOBAL_FILE)}</b>`; return; }
+    if (G.view.kind === "warden") { $("crumbs").innerHTML = `lenoir-console <span class="sep">›</span> avatars <span class="sep">›</span> <b>${esc(WARDEN.stage.file)}</b>`; return; }
     if (G.view.kind === "floor") {
       const f = S.registry[G.view.id];
       $("crumbs").innerHTML = f.stage
-        ? `renoir-console <span class="sep">›</span> revelation <span class="sep">›</span> ${esc(f.id === "???" ? "isolation" : f.id)} <span class="sep">›</span> <b>${esc(f.stage.file)}</b>`
+        ? `lenoir-console <span class="sep">›</span> revelation <span class="sep">›</span> ${esc(f.id === "???" ? "isolation" : f.id)} <span class="sep">›</span> <b>${esc(f.stage.file)}</b>`
         : `sisyphe-system <span class="sep">›</span> <b>${esc(f.id)}</b> <span class="sep">›</span> 시스템 유지 전용`;
     } else {
       const x = curFault();
@@ -4846,12 +4849,12 @@ var Sisyphe = (() => {
     const own = new Set(), tbl = (obj, mine) => `<dl class="tbl">${Object.entries(obj).map(([k, v]) => `<dt class="${mine.has(k) ? "own" : ""}">${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`;
     let body;
     if (G.view.kind === "global") {
-      body = `<h2>전체 콘솔 · all_renoir.nail</h2><ol>`
+      body = `<h2>전체 콘솔 · all_lenoir.nail</h2><ol>`
         + `<li>등록 진영이 르누아르인 자에게만, 각 층 스크립트보다 먼저 판정한다. 여기서 맞는 줄이 있으면 층 스크립트는 실행되지 않는다.</li>`
         + `<li>'나머지 전부(true)' 줄을 두면 모든 층 스크립트가 가려진다. 공통으로 처리할 경우만 적는다.</li>`
         + `<li>처분은 DEFER · CONTINUE · ISOLATE만 쓸 수 있다. 층 전용 처분(RAID, SORTIE 등)은 그 층 스크립트에 적는다.</li>`
         + `<li>??? 심판의 방의 수감자는 간수의 관할이라 적용되지 않는다.</li>`
-        + `<li>./run_all_renoir는 명령을 기다리는 모든 층을 차례로 실행한다. 오류로 막혔거나 신앙이 부족한 층은 건너뛴다.</li></ol>`;
+        + `<li>./run_all_lenoir는 명령을 기다리는 모든 층을 차례로 실행한다. 오류로 막혔거나 신앙이 부족한 층은 건너뛴다.</li></ol>`;
     } else if (G.view.kind === "floor" && !S.registry[G.view.id].stage) {
       const f = S.registry[G.view.id];
       body = `<h2>${esc(f.id)} ${esc(f.name)} · 시스템 유지 전용</h2><ul>${f.lore.map(l => `<li>${esc(l)}</li>`).join("")}</ul>`
@@ -4953,12 +4956,12 @@ var Sisyphe = (() => {
       + `<h3 id="m-s-values">값의 종류</h3><dl class="tbl">`
       + mrow("숫자", `숫자만 입력한다. <code>4</code> · <code>-3</code> · <code>0.5</code>. 따옴표로 감싸면 글자가 되어 숫자 필드와 맞지 않는다`)
       + mrow("참 · 거짓", `<code>true</code> · <code>false</code> (소문자). <code>virtue</code>나 <code>attr.dazed</code> 같은 예/아니오 필드에 쓴다`)
-      + mrow("글자", `그 밖의 모든 입력. 따옴표는 써도 되고 안 써도 된다. <b>대소문자 · 띄어쓰기 · 글자 하나까지</b> 정확히 같아야 같다고 본다. <code>RENOIR</code>와 <code>renoir</code>는 다르다`)
+      + mrow("글자", `그 밖의 모든 입력. 따옴표는 써도 되고 안 써도 된다. <b>대소문자 · 띄어쓰기 · 글자 하나까지</b> 정확히 같아야 같다고 본다. <code>LENOIR</code>와 <code>lenoir</code>는 다르다`)
       + `</dl>`
 
       + `<h3 id="m-s-and">여러 조건을 함께: &amp;&amp; (그리고)</h3>`
       + `<p><code>+&amp;&amp;</code>로 조건을 이어 붙이면 <b>모든 조건이 맞아야</b> 그 줄이 실행된다.</p>`
-      + ex([exLine(`${cv("faction")} == ${str("RENOIR")} &amp;&amp; ${cv("grade")} &gt;= ${num(3)}`, "CONTINUE", "르누아르이면서 3등급 이상")])
+      + ex([exLine(`${cv("faction")} == ${str("LENOIR")} &amp;&amp; ${cv("grade")} &gt;= ${num(3)}`, "CONTINUE", "르누아르이면서 3등급 이상")])
       + `<p><b>"또는"을 쓰는 문법은 없다.</b> 둘 중 하나만 맞아도 같은 처분을 내리고 싶으면 줄을 나눠 같은 처분을 두 번 쓴다.</p>`
       + ex([exLine(`${cv("type")} == ${str("ROWDY")}`, "ISOLATE", "난동 중이거나"), exLine(`${cv("distortion")} &gt;= ${num(50)}`, "ISOLATE", "뒤틀림이 50 이상이면")])
 
@@ -4991,7 +4994,7 @@ var Sisyphe = (() => {
       + `<h3>처분</h3><ul>`
       + `<li><code>return</code> 뒤에 처분 이름을 고른다. 공통 처분은 <code>DEFER</code>(권한 밖 대상을 시스템에 맡김) · <code>CONTINUE</code>(하던 일을 계속) · <code>ISOLATE</code>(??? 구역에 격리) 셋이다.</li>`
       + `<li>층마다 전용 처분이 더 있다(RAID, SORTIE 등). 그 층 매뉴얼의 '처분' 표에 노란색으로 표시된다.</li>`
-      + `<li>전체 콘솔(all_renoir.nail)에는 공통 처분 셋만 쓸 수 있다. .sys 루틴에는 그 루틴의 결과값만 쓸 수 있다.</li>`
+      + `<li>전체 콘솔(all_lenoir.nail)에는 공통 처분 셋만 쓸 수 있다. .sys 루틴에는 그 루틴의 결과값만 쓸 수 있다.</li>`
       + `<li>권한 밖 대상(등록 진영이 르누아르가 아닌 자)에게는 DEFER만 허용된다.</li></ul>`
 
       + `<h3>주석과 삭제된 줄</h3><ul>`
@@ -5044,7 +5047,7 @@ var Sisyphe = (() => {
 
   function terminalSection() {
     return `<h2 id="m-term">터미널 읽는 법</h2><dl class="tbl">`
-      + mrow("sisyphe@renoir-1F:~$", "명령 줄. 지금 콘솔이 보고 있는 곳과 실행한 명령")
+      + mrow("sisyphe@lenoir-1F:~$", "명령 줄. 지금 콘솔이 보고 있는 곳과 실행한 명령")
       + mrow("SYS", "시스템 진행 (출근, 실행 시작 · 끝, 재고 정리 등)")
       + mrow("INFO", "판정 과정. <code>대상 · rule[3] CONTINUE</code>는 그 대상이 3번 줄에 걸려 CONTINUE를 받았다는 뜻. <code>rule[-]</code>는 맞는 줄이 없었다는 뜻")
       + mrow("OK", "문제없는 판정")
@@ -5085,7 +5088,7 @@ var Sisyphe = (() => {
       + `<li>상태 표시줄의 ❚❚ · 1× · 2× · 4×로 근무 시계를 멈추거나 빠르게 한다. 명령 실행과 간수 출격 중에는 시계가 멈춘다.</li>`
       + `<li>제목 표시줄의 '⏏ 콘솔 메인'(또는 Esc)을 누르면 근무가 멈추고 시작 화면으로 나간다. Managing으로 이어서 근무한다.</li>`
       + `<li>탐색기 '층'에서 층을 열면 그 층에서 할 수 있는 일만 나온다. 1F~5F는 목소리와 행동 명령, B1 · 6F · ???는 행동 명령만, B3 · B2 · 7F('유지' 표시)는 시스템 루틴 현황만 보인다.</li>`
-      + `<li>'명령' 표시가 붙은 층에서만 ./run_command를 실행할 수 있다. 전체 콘솔(ALL)의 ./run_all_renoir는 명령을 기다리는 모든 층을 한 번에 실행한다.</li>`
+      + `<li>'명령' 표시가 붙은 층에서만 ./run_command를 실행할 수 있다. 전체 콘솔(ALL)의 ./run_all_lenoir는 명령을 기다리는 모든 층을 한 번에 실행한다.</li>`
       + `<li>탐색기 '간수 아바타 · 운명 이탈'의 AV는 판결 스크립트, 그 아래 항목은 감지된 이탈이다. 이탈을 열고 '간수 출격'을 누른다.</li>`
       + `<li>탐색기 '시스템 유지'에 오류 난 .sys 파일이 나타난다. 열어서 고친 뒤 ./verify를 누른다. 급할 때는 그 아래 '전체 재고 정리'(하루 1회, 두 번 클릭)로 기억 영역 오류를 한꺼번에 지운다.</li>`
       + `<li>코드의 노란 점선 부분은 눌러서 바꾸고, 값 칸은 직접 입력한다. +&& 조건 추가, × 조건 삭제, ↑↓ 줄 이동, '필드'는 값 대신 다른 필드와 비교. 줄의 빈 곳을 누르면 그 줄 첫 칸으로 간다.</li>`
@@ -5093,7 +5096,8 @@ var Sisyphe = (() => {
       + `<li>키보드로 편집할 때: 화살표로 칸 사이를 옮겨 다니고, 고르는 칸은 Space로 목록을 연다. 입력 칸은 Enter로 반영한다. 편집은 화면마다 Ctrl+Z로 되돌릴 수 있다.</li>`
       + `<li>행동 명령과 판결 스크립트는 줄 수 제한 없이 '+ 줄'로 늘리고 '삭제'로 지운다. 패치 한도(${S.DEFAULTS.PATCH_BUDGET}줄)는 .sys 수리에만 적용된다.</li>`
       + `<li>Ctrl+Enter(맥은 Cmd+Enter): 층에서는 행동 명령, 전체 콘솔에서는 전체 실행, 간수 화면에서는 출격, .sys에서는 ./verify.</li>`
-      + `<li>행동 명령 스크립트와 판결 스크립트는 이 브라우저에 자동 저장된다. '초기화'를 누르면 처음 뼈대로 돌아간다.</li>`
+      + `<li>행동 명령 스크립트와 판결 스크립트는 이 브라우저에 자동 저장된다(Ctrl+S를 누를 필요 없다). '초기화'를 누르면 처음 뼈대로 돌아간다.</li>`
+      + `<li>근무 속도: 상태 표시줄의 ❚❚ · 1× · 2× · 4×, 또는 Ctrl+P(일시정지) · Ctrl+, · Ctrl+.(느리게 · 빠르게).</li>`
       + `<li>목소리 입력칸에 문장을 쓰고 Enter 또는 '▶ 목소리 재생'. '음성'을 켜면 브라우저 음성으로도 읽는다.</li>`
       + `<li>탐색기 맨 아래 '소각'은 근무 중 언제든 두 번 눌러 게임을 스스로 끝낸다. 기록이 남고 다음 관리자는 1일차부터 시작한다.</li>`
       + `<li>게임 오버 창과 소각 기록 창의 '시작 화면으로'는 시작 화면으로 나간다. 게임 오버 상태는 그대로라서 Managing을 누르면 다시 게임 오버 창이 뜬다.</li>`
@@ -5105,6 +5109,10 @@ var Sisyphe = (() => {
       + mrow("T / L / S", "시작 화면: Tutorial / Log / Settings")
       + mrow("Esc", "시작 화면의 Log · Settings: 메뉴로 돌아가기. 콘솔: 근무를 멈추고 시작 화면으로")
       + mrow("Ctrl+Enter (맥 Cmd+Enter)", "층: 행동 명령 · 전체 콘솔: 전체 실행 · 간수 화면: 출격 · .sys: ./verify")
+      + mrow("Ctrl+P", "일시정지 · 다시 진행 (어디서든)")
+      + mrow("Ctrl+, / Ctrl+.", "근무 속도 한 단계 느리게 · 빠르게 (1× · 2× · 4×)")
+      + mrow("Space / 1 · 2 · 3", "입력 칸 밖에서: 일시정지 · 1× · 2× · 4×")
+      + mrow("Ctrl+S", "스크립트는 고칠 때마다 자동 저장된다. 눌러도 브라우저 저장창은 뜨지 않는다")
       + mrow("Enter (목소리 입력칸)", "목소리 재생")
       + mrow("↑ / ↓ (코드)", "윗줄 · 아랫줄의 같은 칸으로 (주석 줄은 건너뜀)")
       + mrow("← / → (코드)", "옆 칸으로. 입력 칸에서는 글자 끝까지 간 뒤 넘어간다. 줄 끝에서는 다음 줄로")
@@ -5183,11 +5191,45 @@ var Sisyphe = (() => {
   $("tree-warden").onclick = e => { const b = e.target.closest("button"); if (!b || G.busy) return; openWarden(b.dataset.dev ? +b.dataset.dev : null); };
   $("b-wipe").onclick = wipeClick;
   $("tree-sys").onclick = e => { const b = e.target.closest("button"); if (b && !G.busy) openFault(+b.dataset.fault); };
+  const SPEEDS = [1, 2, 4];
+  let lastSpeed = 1;
+  function setSpeed(s) {
+    if (G.speed > 0) lastSpeed = G.speed;
+    G.speed = s;
+    document.querySelectorAll("#speed button").forEach(x => x.classList.toggle("on", +x.dataset.s === s));
+  }
+  function speedNote() { flashStatus(G.speed ? `속도 ${G.speed}×` : "일시정지"); }
+  const togglePause = () => { setSpeed(G.speed > 0 ? 0 : (lastSpeed || 1)); speedNote(); };
+  const stepSpeed = d => { const cur = G.speed > 0 ? G.speed : lastSpeed; const i = Math.max(0, Math.min(SPEEDS.length - 1, SPEEDS.indexOf(cur) + d)); setSpeed(SPEEDS[i]); speedNote(); };
+  /** 상태 표시줄 시계 옆에 잠깐 띄우는 안내 */
+  let flashT = 0;
+  function flashStatus(text) {
+    const el = $("s-flash"); if (!el) return;
+    el.textContent = text; el.hidden = false; clearTimeout(flashT);
+    flashT = setTimeout(() => { el.hidden = true; }, 1600);
+  }
   $("speed").onclick = e => {
     const b = e.target.closest("button"); if (!b) return;
-    G.speed = +b.dataset.s;
-    document.querySelectorAll("#speed button").forEach(x => x.classList.toggle("on", x === b));
+    setSpeed(+b.dataset.s);
   };
+  const typingIn = el => !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
+  document.addEventListener("keydown", e => {
+    if (onTitle || !G) return;
+    const k = e.key.toLowerCase();
+    // Ctrl+S: 브라우저의 '페이지 저장'을 막는다. 스크립트는 고칠 때마다 자동 저장된다
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && k === "s") { e.preventDefault(); saveScripts(); flashStatus(TUT.on ? "튜토리얼은 저장하지 않는다" : "자동 저장됨 · Ctrl+S 필요 없음"); return; }
+    if (G.over || document.querySelector(".overlay:not([hidden])")) return;
+    // 어디서든: Ctrl+P 일시정지 / Ctrl+, 느리게 / Ctrl+. 빠르게
+    if (e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+      if (k === "p") { e.preventDefault(); togglePause(); return; }
+      if (e.key === ",") { e.preventDefault(); stepSpeed(-1); return; }
+      if (e.key === ".") { e.preventDefault(); stepSpeed(1); return; }
+    }
+    // 입력 중이 아닐 때: Space 일시정지, 1 · 2 · 3 = 1× · 2× · 4×
+    if (e.ctrlKey || e.metaKey || e.altKey || typingIn(document.activeElement)) return;
+    if (e.key === " " && (document.activeElement === document.body || !document.activeElement)) { e.preventDefault(); togglePause(); return; }
+    if (/^[123]$/.test(e.key)) { e.preventDefault(); setSpeed(SPEEDS[+e.key - 1]); speedNote(); }
+  });
   function lockUI(v) {
     if (v) codeFocusBeforeBusy = $("code").contains(document.activeElement);
     else if (codeFocusBeforeBusy) { pendingFocus = { ...caret }; codeFocusBeforeBusy = false; }
@@ -5199,12 +5241,13 @@ var Sisyphe = (() => {
   /* ============ 터미널 ============ */
   const term = $("term");
   let ttsOn = !!SET.tts;
-  function host() { return G.view.kind === "floor" ? (hasCmd(G.view.id) ? `sisyphe@renoir-${G.view.id}` : `sisyphe@${G.view.id}`) : G.view.kind === "warden" ? "sisyphe@warden-avatar" : G.view.kind === "global" ? "sisyphe@all-renoir" : "sisyphe@maintenance"; }
+  function host() { return G.view.kind === "floor" ? (hasCmd(G.view.id) ? `sisyphe@lenoir-${G.view.id}` : `sisyphe@${G.view.id}`) : G.view.kind === "warden" ? "sisyphe@warden-avatar" : G.view.kind === "global" ? "sisyphe@all-lenoir" : "sisyphe@maintenance"; }
   function out(html, cls = "L-SYS") { const d = document.createElement("div"); d.className = cls; d.innerHTML = html; term.appendChild(d); $("pbody").scrollTop = 1e9; }
   function prompt(cmd) { dropCursor(); out(`<span>${host()}</span>:<span class="path">~</span>$ <span class="cmd">${esc(cmd)}</span>`, "pr"); }
   function idle() { dropCursor(); out(`<span>${host()}</span>:<span class="path">~</span>$ <span class="cursor"></span>`, "pr"); }
   function dropCursor() { term.querySelectorAll(".cursor").forEach(c => c.parentElement.remove()); }
-  const line = l => out(`[${l.time}] ${l.level.padEnd(5)} ${esc(l.msg)}`, "L-" + l.level);
+  // 엔진 로그의 시각은 명령마다 09:00부터 새로 세는 내부 시계라 근무 시계와 어긋난다. 근무 시계로 찍는다
+  const line = l => out(`[${fmtClock(G.clock)}] ${l.level.padEnd(5)} ${esc(l.msg)}`, "L-" + l.level);
   const wait = ms => new Promise(r => setTimeout(r, ms));
   document.addEventListener("keydown", e => {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); G.view.kind === "global" ? runAllNow() : G.view.kind === "floor" ? runCommandNow() : G.view.kind === "warden" ? deployNow() : verifyNow(); }
@@ -5426,10 +5469,10 @@ var Sisyphe = (() => {
       task: "고친 스크립트로 다시 실행하기", done: () => TUT.flags.afterEdit && (TUT.flags.losses.at(-1) < TUT.flags.losses[0]),
       hints: ["직전 단계의 줄이 if (true) 줄보다 위에 있는지, rougeInHall 값이 true, grade 조건이 >= 2인지 확인하자. 고친 뒤에는 바로 다시 실행하면 된다."] },
     { ch: "3장 · 스크립트 고치기", title: "전체 콘솔", hl: "#tree-global", code: true,
-      body: () => "<code>all_renoir.nail</code>은 <b>모든 르누아르</b>에게 각 층 스크립트보다 <b>먼저</b> 적용되는 명령이다. 여러 층에 공통인 규칙(예: 난동 중이면 격리)은 여기 한 번만 쓰면 된다. 탐색기의 <b>ALL</b>을 열어 보자. 열면 매뉴얼의 '지금 열린 파일'에 전체 콘솔 규칙이 나온다.",
-      task: "탐색기에서 ALL(all_renoir.nail) 열기", done: () => TUT.flags.sawGlobal || G.view.kind === "global",
+      body: () => "<code>all_lenoir.nail</code>은 <b>모든 르누아르</b>에게 각 층 스크립트보다 <b>먼저</b> 적용되는 명령이다. 여러 층에 공통인 규칙(예: 난동 중이면 격리)은 여기 한 번만 쓰면 된다. 탐색기의 <b>ALL</b>을 열어 보자. 열면 매뉴얼의 '지금 열린 파일'에 전체 콘솔 규칙이 나온다.",
+      task: "탐색기에서 ALL(all_lenoir.nail) 열기", done: () => TUT.flags.sawGlobal || G.view.kind === "global",
       read: { sel: "#m-file", label: "지금 열린 파일 — 전체 콘솔", ms: 3500 },
-      quiz: { q: "all_renoir.nail에 if (true) return CONTINUE; 줄을 두면?", opts: ["모든 르누아르가 그 줄에 걸려, 층 스크립트가 전부 가려진다", "아무 일도 일어나지 않는다", "1F에만 적용된다"], ans: 0,
+      quiz: { q: "all_lenoir.nail에 if (true) return CONTINUE; 줄을 두면?", opts: ["모든 르누아르가 그 줄에 걸려, 층 스크립트가 전부 가려진다", "아무 일도 일어나지 않는다", "1F에만 적용된다"], ans: 0,
         why: "전체 콘솔에서 맞는 줄이 있으면 층 스크립트는 실행되지 않는다. 공통으로 처리할 경우만 적어야 한다.", miss: "전체 콘솔 설명의 두 번째 줄을 다시 보자." } },
 
     /* ---------- 4장 · 시스템 유지 ---------- */
@@ -5694,7 +5737,7 @@ var Sisyphe = (() => {
     const day = PROG.broken ? PROG.broken.day : G.day;
     const L = [
       ["ok", "sisyphe.kernel", "시스템 내부 시간 동기화"],
-      ["ok", "renoir.revelation", "검은 신의 목소리 채널 · 행동 명령 큐"],
+      ["ok", "lenoir.revelation", "검은 신의 목소리 채널 · 행동 명령 큐"],
       ["ok", "maintenance", `.sys 루틴 ${M.FAULTS.length}종 감시`],
       ["ok", "warden_avatar", "간수 아바타 대기"],
       PROG.broken ? ["fail", "integrity", "시지프 시스템 붕괴 상태 — 이방인들이 루틴을 망가뜨렸다"] : ["fate", "fate_tracker", day > 1 ? `이방인의 운명 이탈 신호 증가 (${day}일차)` : "이방인 신호 감지 대기"],
