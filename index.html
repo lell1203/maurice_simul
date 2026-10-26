@@ -1,5 +1,4 @@
 <title>Sisyphe System Console</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <style>
 /* Layout: VS Code 형식 IDE — 액티비티 바 | 탐색기(계시: 층 / 시스템: 오류 파일) | 에디터(계시 도구 또는 유지 도구 + 코드) / 하단 패널 / 노란 상태 표시줄(근무 시계).
@@ -223,6 +222,12 @@ body.broken .status{background:color-mix(in srgb,var(--err) 30%,var(--side))}
   background:transparent;color:var(--err);border:1px solid color-mix(in srgb,var(--err) 55%,transparent);text-align:left;display:flex;justify-content:space-between;gap:8px}
 .wipe:hover:not(:disabled){background:color-mix(in srgb,var(--err) 14%,transparent)}
 .wipe.armed{background:var(--err);color:#fff;border-color:var(--err)}
+.wipe.cycle{background:var(--yellow);color:var(--on-yellow);border-color:var(--yellow);font-weight:600;animation:cyclepulse 1.6s ease-in-out infinite}
+.wipe.cycle:hover:not(:disabled){background:#ffd633}
+@keyframes cyclepulse{50%{box-shadow:0 0 0 3px rgba(255,204,0,.25)}}
+@media (prefers-reduced-motion:reduce){.wipe.cycle{animation:none}}
+#s-int-wrap.done b{color:var(--yellow);background:var(--on-yellow);padding:0 5px;border-radius:2px}
+.rate.stop{color:var(--yellow);background:var(--on-yellow);padding:0 5px;border-radius:2px;font-weight:600;text-decoration:none}
 .wipe:disabled{opacity:.45;cursor:not-allowed}
 .wipe small{opacity:.8}
 /* 오버레이 공통 (간수 아바타 로딩, 퇴근, 전체 재고 정리) */
@@ -366,6 +371,16 @@ body.reduce-fx .glitch .roll{display:none}
 .ts-notice .lnk{background:none;border:0;padding:0;font:inherit;color:var(--yellow);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .ts-notice .device-bad{display:block;margin-top:3px;color:var(--err)}
 @media (max-width:480px){.ts-notice li{grid-template-columns:1fr;gap:2px}.ts-notice .tag{justify-self:start;padding:1px 6px}}
+.pn{display:flex;flex-direction:column;gap:6px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.pn:last-child{border-bottom:0;padding-bottom:0}
+.pn h4{margin:0;display:flex;align-items:baseline;gap:10px;font-family:var(--f-mono);font-size:15px;font-weight:600;color:var(--fg)}
+.pn h4 .d{font-size:11.5px;color:var(--faint);font-weight:400}
+.pn h4 .cur{font-family:var(--f-ui);font-size:10.5px;color:var(--on-yellow);background:var(--yellow);border-radius:3px;padding:1px 6px}
+.pn p{margin:0;color:var(--dim);font-size:12.5px}
+.pn ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.pn li{display:grid;grid-template-columns:40px 1fr;gap:8px;font-size:12.5px;line-height:1.5;color:var(--fg)}
+.pn li .k{font-size:10.5px;text-align:center;border:1px solid var(--line2);border-radius:3px;padding:1px 0;color:var(--dim);align-self:start;margin-top:1px}
+.pn li .k.new{color:var(--ok);border-color:var(--ok)} .pn li .k.fix{color:var(--info);border-color:var(--info)} .pn li .k.chg{color:var(--warn);border-color:var(--warn)}
 .ts-foot{margin-top:6px;font-size:11px;color:var(--faint);display:flex;flex-wrap:wrap;gap:4px 14px}
 .tb-home{margin-left:auto;background:none;border:1px solid var(--line2);border-radius:3px;color:var(--dim);font-size:11.5px;padding:1px 8px;cursor:pointer}
 .tb-home:hover{color:var(--yellow);border-color:var(--yellow-line)}
@@ -462,11 +477,12 @@ body.reduce-fx .glitch .roll{display:none}
 
   <footer class="status">
     <span title="근무 일차"><b id="s-day">1</b>일차</span>
+    <span title="회차 (시나리오). 보존이 100에 닿으면 완결되고, 회차 재고 정리로 다음 회차를 연다"><b id="s-cycle">1</b>회차</span>
     <span class="accent" title="근무 시계">⏱ <b id="s-clock">09:00</b></span><span class="s-flash" id="s-flash" role="status" hidden></span>
     <span class="speed" id="speed" aria-label="속도">
       <button data-s="0" title="일시정지 (Ctrl+P · Space)">❚❚</button><button data-s="1" class="on" title="1× (1)">1×</button><button data-s="2" title="2× (2)">2×</button><button data-s="4" title="4× (3)">4×</button>
     </span>
-    <span id="s-int-wrap">보존 <b id="s-int">100</b></span>
+    <span id="s-int-wrap" title="시스템 보존 = 시나리오가 운명대로 흘러가는 정도. 100에 닿으면 완결">보존 <b id="s-int">70</b></span>
     <span title="점수. 근무 시간에 따라 쌓이고, 고치지 않은 오류가 있으면 덜 쌓인다">경험 통조림 <b id="s-exp">0</b> <span class="rate" id="s-rate"></span></span>
     <span class="hide-sm">오류 <b id="s-faults">0</b></span>
     <span class="hide-sm">이탈 <b id="s-devs">0</b></span>
@@ -507,6 +523,7 @@ body.reduce-fx .glitch .roll{display:none}
       <button class="ts-btn" id="ts-tutorial"><span class="k" aria-hidden="true">?</span><span><b>Tutorial<span class="badge" id="ts-tut-badge" hidden>처음이라면</span></b><small>6장 28단계 · 직접 해 보고 매뉴얼을 펴서 읽으며 익히기 · 기록에 남지 않는다</small></span><kbd>T</kbd></button>
       <button class="ts-btn" id="ts-log"><span class="k" aria-hidden="true">≡</span><span><b>Log</b><small>지금까지의 관리자 근무 기록</small></span><kbd>L</kbd></button>
       <button class="ts-btn" id="ts-settings"><span class="k" aria-hidden="true">⚙</span><span><b>Settings</b><small>시작 속도 · 음성 · 연출 · 기록 삭제</small></span><kbd>S</kbd></button>
+      <button class="ts-btn" id="ts-patch"><span class="k" aria-hidden="true">✎</span><span><b>Patch Notes<span class="badge" id="ts-patch-badge" hidden>NEW</span></b><small id="ts-patch-sub">버전별 업데이트 내역</small></span><kbd>P</kbd></button>
     </nav>
     <div class="ts-panel" id="ts-panel" hidden></div>
     <ul class="ts-notice" id="ts-notice" aria-label="시작 전 안내">
@@ -515,7 +532,7 @@ body.reduce-fx .glitch .roll{display:none}
       <li class="spoil"><span class="tag">스포일러</span><span>《Limbus Company》 <b>10장(시지프 백화점)</b>의 설정과 인물이 등장합니다.</span></li>
       <li class="fan"><span class="tag">팬게임</span><span>Project Moon과 관계없는 <b>비공식 · 비영리</b> 2차 창작물입니다. 원작의 세계관과 인물에 대한 권리는 Project Moon에 있습니다.</span></li>
     </ul>
-    <footer class="ts-foot"><span>Project Moon 《Limbus Company》 비공식 팬게임</span><span>진행 상황과 기록은 이 브라우저에만 저장됩니다</span></footer>
+    <footer class="ts-foot"><span>Project Moon 《Limbus Company》 비공식 팬게임</span><span>진행 상황과 기록은 이 브라우저에만 저장됩니다</span><span id="ts-ver"></span></footer>
   </div>
 </section>
 
@@ -1244,7 +1261,9 @@ var Sisyphe = (() => {
         "\uADDC\uCE59\uC740 \uC704\uC5D0\uC11C\uBD80\uD130 \uD310\uC815\uD558\uBA70, \uCC98\uC74C \uB9DE\uB294 \uD55C \uC904\uB9CC \uC2E4\uD589\uD55C\uB2E4. \uC2DC\uC2A4\uD15C\uC740 \uC218\uAC10\uC790\uB97C \uC8FD\uC77C \uC218 \uC5C6\uB2E4.",
         "[\uC810\uC218] \uACBD\uD5D8 \uD1B5\uC870\uB9BC\uC774 \uAD00\uB9AC\uC790\uC758 \uC810\uC218\uB2E4. \uADFC\uBB34 \uC2DC\uAC04\uC5D0 \uB530\uB77C \uC313\uC774\uACE0, \uACE0\uCE58\uC9C0 \uC54A\uC740 \uC624\uB958\uAC00 \uC788\uC73C\uBA74 \uB35C \uC313\uC778\uB2E4. \uACC4\uC2DC\uC640 \uD310\uACB0\uC744 \uC798 \uB0B4\uB9AC\uBA74 \uB354 \uC5BB\uB294\uB2E4.",
         "[\uC2DC\uC2A4\uD15C \uC720\uC9C0] \uC624\uB958\uAC00 \uB09C .sys \uB8E8\uD2F4\uC740 2\uC904 \uC774\uB0B4\uB85C \uACE0\uCCD0 \uB2E8\uC704 \uD14C\uC2A4\uD2B8\uB97C \uD1B5\uACFC\uC2DC\uD0A8\uB2E4. \uC5B4\uB5A4 \uC624\uB958\uB294 \uACE0\uCE60 \uB54C\uAE4C\uC9C0 \uC774\uC0C1 \uD604\uC0C1(\uC2DC\uAC04 \uAC00\uC18D, \uC2E0\uC559 \uC218\uCE58 \uAC00\uB9BC \uB4F1)\uC744 \uC77C\uC73C\uD0A8\uB2E4.",
-        "[\uC804\uCCB4 \uC7AC\uACE0 \uC815\uB9AC] \uD558\uB8E8 \uD55C \uBC88, \uBC31\uD654\uC810 \uC804\uCCB4\uC758 \uAE30\uC5B5\uC744 \uC9C0\uC6B4\uB2E4. \uAE30\uC5B5 \uC601\uC5ED\uC758 \uC624\uB958\uB294 \uBAA8\uB450 \uC9C0\uC6CC\uC9C0\uC9C0\uB9CC \uC544\uC774\uD15C \uC601\uC5ED\uACFC \uC6B4\uBA85 \uAE30\uB85D\uC758 \uC624\uB958\uB294 \uB0A8\uB294\uB2E4. \uBA85\uB839 \uC694\uCCAD\uC774 \uBAA8\uB450 \uCDE8\uC18C\uB418\uACE0 \uC2DC\uAC04\uC774 1\uC2DC\uAC04 \uD750\uB974\uBA70, \uB05D\uB098\uBA74 \uB974\uB204\uC544\uB974\uC758 \uC2E0\uC559\uC774 50\uC73C\uB85C \uCD08\uAE30\uD654\uB41C\uB2E4."
+        "[\uC804\uCCB4 \uC7AC\uACE0 \uC815\uB9AC] \uD558\uB8E8 \uD55C \uBC88, \uBC31\uD654\uC810 \uC804\uCCB4\uC758 \uAE30\uC5B5\uC744 \uC9C0\uC6B4\uB2E4. \uAE30\uC5B5 \uC601\uC5ED\uC758 \uC624\uB958\uB294 \uBAA8\uB450 \uC9C0\uC6CC\uC9C0\uC9C0\uB9CC \uC544\uC774\uD15C \uC601\uC5ED\uACFC \uC6B4\uBA85 \uAE30\uB85D\uC758 \uC624\uB958\uB294 \uB0A8\uB294\uB2E4. \uBA85\uB839 \uC694\uCCAD\uC774 \uBAA8\uB450 \uCDE8\uC18C\uB418\uACE0 \uC2DC\uAC04\uC774 1\uC2DC\uAC04 \uD750\uB974\uBA70, \uB05D\uB098\uBA74 \uB974\uB204\uC544\uB974\uC758 \uC2E0\uC559\uC774 50\uC73C\uB85C \uCD08\uAE30\uD654\uB41C\uB2E4.",
+        "[\uD68C\uCC28] \uC2DC\uC2A4\uD15C \uBCF4\uC874\uC740 \uC2DC\uB098\uB9AC\uC624\uAC00 \uC6B4\uBA85\uB300\uB85C \uD758\uB7EC\uAC00\uB294 \uC815\uB3C4\uB2E4. \uD68C\uCC28\uB97C \uC2DC\uC791\uD560 \uB54C 70\uC5D0\uC11C \uCD9C\uBC1C\uD574 \uB0A0\uC774 \uBC14\uB00C\uC5B4\uB3C4 \uC774\uC5B4\uC9C0\uACE0, \uD760 \uC5C6\uB294 \uACC4\uC2DC \xB7 \uD310\uACB0 \xB7 \uC218\uB9AC\uB85C \uC870\uAE08\uC529 \uC624\uB978\uB2E4.",
+        "[\uC2DC\uB098\uB9AC\uC624 \uC644\uACB0] \uBCF4\uC874\uC774 100\uC5D0 \uB2FF\uC73C\uBA74 \uADF8 \uD68C\uCC28\uAC00 \uC644\uACB0\uB418\uC5B4 \uACBD\uD5D8 \uD1B5\uC870\uB9BC\uC774 \uB354 \uC0DD\uAE30\uC9C0 \uC54A\uB294\uB2E4. \uD68C\uCC28 \uC7AC\uACE0 \uC815\uB9AC\uB85C \uCD08\uAE30\uD654\uD558\uBA74 \uC644\uACB0 \uBCF4\uC0C1\uC744 \uBC1B\uACE0, \uB354 \uC5B4\uB824\uC6B4 \uB2E4\uC74C \uD68C\uCC28\uAC00 \uC2DC\uC791\uB41C\uB2E4."
       ];
       function manual(floor) {
         const lines = [prompt(floor.id, "cat \uCF58\uC194_\uB9E4\uB274\uC5BC.md"), "  [\uACF5\uD1B5 \uC6D0\uCE59]"];
@@ -2147,15 +2166,417 @@ var Sisyphe = (() => {
             { label: "\uC774\uBC29\uC778 \xB7 \uC774\uBBF8 \uBB36\uC784", sample: P({ kind: KIND.STRANGER, attrs: { anchored: true } }), expect: "RELEASE" },
             { label: "\uC77C\uBC18 \uC190\uB2D8", sample: P({ attrs: { anchored: false } }), expect: "RELEASE" }
           ]
+        },
+        /* 20 · 1F ----------------------------------------------------------- */
+        {
+          id: "lostfound",
+          file: "lost_and_found.sys",
+          floor: "1F",
+          minDay: 5,
+          title: "\uBD84\uC2E4\uBB3C \uBCF4\uAD00 \uD310\uC815 \uC624\uB958",
+          symptom: "\uC8FC\uC778\uC774 \uC788\uB294 \uBB3C\uAC74\uC774 \uD3D0\uAE30\uB418\uACE0, \uAC12\uB098\uAC00\uB294 \uBB3C\uAC74\uC774 \uBC84\uB824\uC9C0\uACE0 \uC788\uB2E4",
+          storage: "ITEM",
+          blocks: "command",
+          actions: { STORE: "\uBCF4\uAD00\uD568\uC5D0 \uB123\uB294\uB2E4", DISCARD: "\uD3D0\uAE30\uD55C\uB2E4" },
+          fieldDocs: { "attr.owner": "\uC8FC\uC778\uC774 \uB4F1\uB85D\uB41C \uBB3C\uAC74\uC778\uAC00 true/false", "attr.value": "\uAC10\uC815\uAC00 0~100" },
+          correct: [
+            note("lost_and_found.sys \xB7 1F \uBD84\uC2E4\uBB3C \uBCF4\uAD00"),
+            note("\uC8FC\uC778\uC774 \uB4F1\uB85D\uB41C \uBB3C\uAC74\uC740 \uAC12\uACFC \uC0C1\uAD00\uC5C6\uC774 \uBCF4\uAD00\uD55C\uB2E4"),
+            rule(cond("attr.owner", "==", true), "STORE"),
+            note("\uC8FC\uC778\uC774 \uC5C6\uC73C\uBA74 \uAC10\uC815\uAC00 30 \uC774\uC0C1\uB9CC \uBCF4\uAD00\uD55C\uB2E4"),
+            rule(cond("attr.value", ">=", 30), "STORE"),
+            rule(any(), "DISCARD")
+          ],
+          bugs: [
+            {
+              id: "deleted",
+              name: "\uC9C0\uC6CC\uC9C4 \uC904",
+              concept: "\uAF2D \uD544\uC694\uD55C \uC904\uC774 \uC0AD\uC81C\uB418\uC5B4 \uC788\uB2E4. \uC8FC\uC11D\uC744 \uBCF4\uACE0 '\uB418\uC0B4\uB9AC\uAE30'",
+              mutate: (rs) => {
+                rs[2] = off(rs[2]);
+                return rs;
+              }
+            },
+            {
+              id: "action",
+              name: "\uC798\uBABB\uB41C \uCC98\uBD84",
+              concept: "\uC870\uAC74\uC740 \uB9DE\uB294\uB370 return \uAC12\uC774 \uD2C0\uB838\uB2E4",
+              mutate: (rs) => {
+                rs[4] = rule(cond("attr.value", ">=", 30), "DISCARD");
+                return rs;
+              }
+            }
+          ],
+          tests: () => [
+            { label: "\uC8FC\uC778 \uC788\uC74C \xB7 \uAC10\uC815\uAC00 5", sample: P({ attrs: { owner: true, value: 5 } }), expect: "STORE" },
+            { label: "\uC8FC\uC778 \uC5C6\uC74C \xB7 \uAC10\uC815\uAC00 30", sample: P({ attrs: { owner: false, value: 30 } }), expect: "STORE" },
+            { label: "\uC8FC\uC778 \uC5C6\uC74C \xB7 \uAC10\uC815\uAC00 10", sample: P({ attrs: { owner: false, value: 10 } }), expect: "DISCARD" },
+            { label: "\uC8FC\uC778 \uC788\uC74C \xB7 \uAC10\uC815\uAC00 90", sample: P({ attrs: { owner: true, value: 90 } }), expect: "STORE" }
+          ]
+        },
+        /* 21 · 3F ----------------------------------------------------------- */
+        {
+          id: "fitting",
+          file: "fitting_room.sys",
+          floor: "3F",
+          minDay: 6,
+          title: "\uD0C8\uC758\uC2E4 \uBC30\uC815 \uC624\uB958",
+          symptom: "\uB974\uB8E8\uC8FC \uC190\uB2D8\uC774 \uB974\uB204\uC544\uB974 \uC804\uC6A9 \uD0C8\uC758\uC2E4\uC744 \uCC28\uC9C0\uD558\uACE0 \uC788\uB2E4",
+          storage: "MEMORY",
+          blocks: "command",
+          actions: { BLACK_ROOM: "\uB974\uB204\uC544\uB974 \uC804\uC6A9 \uD0C8\uC758\uC2E4\uB85C", COMMON_ROOM: "\uACF5\uC6A9 \uD0C8\uC758\uC2E4\uB85C" },
+          fieldDocs: { faction: "\uB4F1\uB85D \uC9C4\uC601", grade: "\uACE0\uAC1D \uB4F1\uAE09 0~5", "attr.reserved": "\uC608\uC57D\uD588\uB294\uAC00 true/false" },
+          correct: [
+            note("fitting_room.sys \xB7 3F \uD0C8\uC758\uC2E4 \uBC30\uC815"),
+            note("\uC804\uC6A9 \uD0C8\uC758\uC2E4: \uB974\uB204\uC544\uB974\uC774\uBA74\uC11C 2\uB4F1\uAE09 \uC774\uC0C1"),
+            rule(all(cond("faction", "==", N), cond("grade", ">=", 2)), "BLACK_ROOM"),
+            note("\uC608\uC57D\uD55C \uB974\uB204\uC544\uB974\uB294 \uB4F1\uAE09\uACFC \uC0C1\uAD00\uC5C6\uC774 \uC804\uC6A9 \uD0C8\uC758\uC2E4"),
+            rule(all(cond("faction", "==", N), cond("attr.reserved", "==", true)), "BLACK_ROOM"),
+            rule(any(), "COMMON_ROOM")
+          ],
+          bugs: [
+            {
+              id: "missing",
+              name: "\uBE60\uC9C4 \uC870\uAC74",
+              concept: "&& \uC870\uAC74 \uD558\uB098\uAC00 \uBE60\uC838 \uB108\uBB34 \uB113\uC5B4\uC84C\uB2E4. '+&&'\uB85C \uC870\uAC74 \uCD94\uAC00",
+              mutate: (rs) => {
+                rs[2] = rule(cond("grade", ">=", 2), "BLACK_ROOM");
+                return rs;
+              }
+            },
+            {
+              id: "missing-reserved",
+              name: "\uBE60\uC9C4 \uC870\uAC74",
+              concept: "&& \uC870\uAC74 \uD558\uB098\uAC00 \uBE60\uC838 \uB108\uBB34 \uB113\uC5B4\uC84C\uB2E4. '+&&'\uB85C \uC870\uAC74 \uCD94\uAC00",
+              mutate: (rs) => {
+                rs[4] = rule(cond("attr.reserved", "==", true), "BLACK_ROOM");
+                return rs;
+              }
+            }
+          ],
+          tests: () => [
+            { label: "\uB974\uB204\uC544\uB974 \xB7 3\uB4F1\uAE09", sample: P({ faction: N, grade: 3 }), expect: "BLACK_ROOM" },
+            { label: "\uB974\uB8E8\uC8FC \xB7 4\uB4F1\uAE09", sample: P({ faction: R, grade: 4 }), expect: "COMMON_ROOM" },
+            { label: "\uB974\uB204\uC544\uB974 \xB7 1\uB4F1\uAE09 \xB7 \uC608\uC57D", sample: P({ faction: N, grade: 1, attrs: { reserved: true } }), expect: "BLACK_ROOM" },
+            { label: "\uB974\uB8E8\uC8FC \xB7 1\uB4F1\uAE09 \xB7 \uC608\uC57D", sample: P({ faction: R, grade: 1, attrs: { reserved: true } }), expect: "COMMON_ROOM" },
+            { label: "\uB974\uB204\uC544\uB974 \xB7 1\uB4F1\uAE09 \xB7 \uC608\uC57D \uC5C6\uC74C", sample: P({ faction: N, grade: 1, attrs: { reserved: false } }), expect: "COMMON_ROOM" },
+            { label: "\uBB34\uC18C\uC18D \xB7 2\uB4F1\uAE09", sample: P({ faction: NONE, grade: 2 }), expect: "COMMON_ROOM" }
+          ]
+        },
+        /* 22 · 4F ----------------------------------------------------------- */
+        {
+          id: "pricetag",
+          file: "price_tag.sys",
+          floor: "4F",
+          minDay: 5,
+          title: "\uAC00\uACA9\uD45C \uAC31\uC2E0 \uC624\uB958",
+          symptom: "\uC2A4\uC2A4\uB85C\uB97C \uD30C\uB294 \uAC00\uAD6C\uB4E4\uC758 \uAC00\uACA9\uD45C\uAC00 \uC5C9\uB6B1\uD558\uAC8C \uBC14\uB00C\uACE0 \uC788\uB2E4",
+          storage: "ITEM",
+          blocks: "command",
+          actions: { HOLD: "\uAC00\uACA9\uC744 \uC720\uC9C0\uD55C\uB2E4", MARKDOWN: "\uAC00\uACA9\uC744 \uAE4E\uB294\uB2E4", PREMIUM: "\uAC00\uACA9\uC744 \uC62C\uB9B0\uB2E4" },
+          fieldDocs: { kind: "\uC874\uC7AC\uC758 \uC885\uB958", virtue: "\uBBF8\uB355\uC774 \uC788\uB294\uAC00", "attr.torn": "\uCC9C\uC774 \uCC22\uC5B4\uC84C\uB294\uAC00 true/false", "attr.days": "\uC9C4\uC5F4\uB41C \uB0A0 \uC218" },
+          correct: [
+            note("price_tag.sys \xB7 4F \uAC00\uAD6C\uAD00 \uAC00\uACA9\uD45C"),
+            note("\uAC00\uAD6C\uAC00 \uC544\uB2CC \uAC83\uC740 \uC190\uB300\uC9C0 \uC54A\uB294\uB2E4"),
+            rule(cond("kind", "!=", KIND.FURNITURE), "HOLD"),
+            note("\uBBF8\uB355\uC774 \uC788\uB294 \uAC00\uAD6C\uB294 \uAC12\uC744 \uC62C\uB9B0\uB2E4"),
+            rule(cond("virtue", "==", true), "PREMIUM"),
+            note("\uCC9C\uC774 \uCC22\uC5B4\uC84C\uAC70\uB098 7\uC77C \uB118\uAC8C \uD314\uB9AC\uC9C0 \uC54A\uC740 \uAC00\uAD6C\uB294 \uAE4E\uB294\uB2E4"),
+            rule(cond("attr.torn", "==", true), "MARKDOWN"),
+            rule(cond("attr.days", ">", 7), "MARKDOWN"),
+            rule(any(), "HOLD")
+          ],
+          bugs: [
+            {
+              id: "action",
+              name: "\uC798\uBABB\uB41C \uCC98\uBD84",
+              concept: "\uC870\uAC74\uC740 \uB9DE\uB294\uB370 return \uAC12\uC774 \uD2C0\uB838\uB2E4",
+              mutate: (rs) => {
+                rs[4] = rule(cond("virtue", "==", true), "MARKDOWN");
+                return rs;
+              }
+            },
+            {
+              id: "field",
+              name: "\uC5C9\uB6B1\uD55C \uD544\uB4DC",
+              concept: "\uBE44\uC2B7\uD55C \uD544\uB4DC(grade\uC640 attr.days)\uB97C \uD5F7\uAC08\uB838\uB2E4",
+              mutate: (rs) => {
+                rs[7] = rule(cond("grade", ">", 7), "MARKDOWN");
+                return rs;
+              }
+            }
+          ],
+          tests: () => [
+            { label: "\uC190\uB2D8 \xB7 \uCC22\uC5B4\uC9D0", sample: P({ attrs: { torn: true, days: 9 } }), expect: "HOLD" },
+            { label: "\uAC00\uAD6C \xB7 \uBBF8\uB355", sample: P({ kind: KIND.FURNITURE, virtue: true, attrs: { torn: false, days: 1 } }), expect: "PREMIUM" },
+            { label: "\uAC00\uAD6C \xB7 \uCC22\uC5B4\uC9D0", sample: P({ kind: KIND.FURNITURE, attrs: { torn: true, days: 2 } }), expect: "MARKDOWN" },
+            { label: "\uAC00\uAD6C \xB7 10\uC77C\uC9F8", sample: P({ kind: KIND.FURNITURE, attrs: { torn: false, days: 10 } }), expect: "MARKDOWN" },
+            { label: "\uAC00\uAD6C \xB7 3\uC77C\uC9F8", sample: P({ kind: KIND.FURNITURE, attrs: { torn: false, days: 3 } }), expect: "HOLD" }
+          ]
+        },
+        /* 23 · 6F ----------------------------------------------------------- */
+        {
+          id: "lift",
+          file: "lift_log.sys",
+          floor: "6F",
+          minDay: 7,
+          title: "\uC2B9\uAC15\uAE30 \uAE30\uB85D \uC624\uB958",
+          symptom: "\uD5C8\uAC00 \uC5C6\uC774 7\uCE35\uC73C\uB85C \uC62C\uB77C\uAC00\uB294 \uC790\uAC00 \uAE30\uB85D\uC5D0 \uB0A8\uC9C0 \uC54A\uB294\uB2E4",
+          storage: "FATE",
+          blocks: "command",
+          actions: { ALERT: "\uAD00\uB9AC\uC790\uC5D0\uAC8C \uACBD\uBCF4", LOG: "\uAE30\uB85D\uB9CC \uD55C\uB2E4", SKIP: "\uAE30\uB85D\uD558\uC9C0 \uC54A\uB294\uB2E4" },
+          fieldDocs: { dest: "\uAC00\uB824\uB294 \uCE35", kind: "\uC874\uC7AC\uC758 \uC885\uB958", "attr.authorized": "7\uCE35 \uCD9C\uC785 \uD5C8\uAC00 true/false" },
+          correct: [
+            note("lift_log.sys \xB7 6F \uC2B9\uAC15\uAE30 \uAE30\uB85D"),
+            note("\uD5C8\uAC00 \uC5C6\uC774 7\uCE35\uC73C\uB85C \uAC00\uB294 \uC790\uB294 \uB204\uAD6C\uB4E0 \uACBD\uBCF4"),
+            rule(all(cond("dest", "==", "7F"), cond("attr.authorized", "==", false)), "ALERT"),
+            note("\uADF8 \uBC16\uC758 \uAC70\uC778 \uC544\uBC14\uD0C0\uB294 \uAE30\uB85D\uD558\uC9C0 \uC54A\uB294\uB2E4"),
+            rule(cond("kind", "==", KIND.GIANT), "SKIP"),
+            rule(any(), "LOG")
+          ],
+          bugs: [
+            {
+              id: "deleted",
+              name: "\uC9C0\uC6CC\uC9C4 \uC904",
+              concept: "\uAF2D \uD544\uC694\uD55C \uC904\uC774 \uC0AD\uC81C\uB418\uC5B4 \uC788\uB2E4. \uC8FC\uC11D\uC744 \uBCF4\uACE0 '\uB418\uC0B4\uB9AC\uAE30'",
+              mutate: (rs) => {
+                rs[2] = off(rs[2]);
+                return rs;
+              }
+            },
+            {
+              id: "boundary",
+              name: "\uACBD\uACC4\uAC12 \uC2E4\uC218",
+              concept: "\uCE35 \uBE44\uAD50\uC5D0\uC11C == \uC640 >= \uC758 \uCC28\uC774 (??? \uB294 7F\uBCF4\uB2E4 \uC704)",
+              mutate: (rs) => {
+                rs[2] = rule(all(cond("dest", ">=", "7F"), cond("attr.authorized", "==", false)), "ALERT");
+                return rs;
+              }
+            }
+          ],
+          tests: () => [
+            { label: "\uC190\uB2D8 \xB7 7F \xB7 \uBB34\uD5C8\uAC00", sample: P({ dest: "7F", attrs: { authorized: false } }), expect: "ALERT" },
+            { label: "\uC190\uB2D8 \xB7 7F \xB7 \uD5C8\uAC00", sample: P({ dest: "7F", attrs: { authorized: true } }), expect: "LOG" },
+            { label: "\uAC70\uC778 \xB7 5F", sample: P({ kind: KIND.GIANT, dest: "5F", attrs: { authorized: false } }), expect: "SKIP" },
+            { label: "\uC190\uB2D8 \xB7 ??? \xB7 \uBB34\uD5C8\uAC00", sample: P({ dest: "???", attrs: { authorized: false } }), expect: "LOG" },
+            { label: "\uAC70\uC778 \xB7 7F \xB7 \uBB34\uD5C8\uAC00", sample: P({ kind: KIND.GIANT, dest: "7F", attrs: { authorized: false } }), expect: "ALERT" }
+          ]
+        },
+        /* 24 · 2F ----------------------------------------------------------- */
+        {
+          id: "patrol",
+          file: "luxury_patrol.sys",
+          floor: "2F",
+          minDay: 8,
+          title: "\uBA85\uD488\uAD00 \uACBD\uBE44 \uD310\uC815 \uC624\uB958",
+          symptom: "\uBB34\uAE30\uB97C \uB4E0 \uB974\uB8E8\uC8FC \uC9C1\uC6D0\uC774 \uBA85\uD488\uAD00\uC744 \uADF8\uB0E5 \uC9C0\uB098\uAC00\uACE0 \uC788\uB2E4",
+          storage: "MEMORY",
+          blocks: "command",
+          actions: { DETAIN: "\uBD99\uC7A1\uB294\uB2E4", WATCH: "\uC9C0\uCF1C\uBCF8\uB2E4", PASS: "\uC9C0\uB098\uAC00\uAC8C \uB454\uB2E4" },
+          fieldDocs: { faction: "\uB4F1\uB85D \uC9C4\uC601", "attr.armed": "\uBB34\uAE30\uB97C \uB4E4\uC5C8\uB294\uAC00 true/false", "attr.staff": "\uBC31\uD654\uC810 \uC9C1\uC6D0\uC778\uAC00 true/false" },
+          correct: [
+            note("luxury_patrol.sys \xB7 2F \uBA85\uD488\uAD00 \uACBD\uBE44"),
+            note("\uBB34\uAE30\uB97C \uB4E0 \uB974\uB8E8\uC8FC\uB294 \uC9C1\uC6D0\uC774\uC5B4\uB3C4 \uBD99\uC7A1\uB294\uB2E4"),
+            rule(all(cond("faction", "==", R), cond("attr.armed", "==", true)), "DETAIN"),
+            note("\uBB34\uAE30 \uC5C6\uB294 \uB974\uB8E8\uC8FC\uB294 \uC9C0\uCF1C\uBCF8\uB2E4"),
+            rule(cond("faction", "==", R), "WATCH"),
+            rule(any(), "PASS")
+          ],
+          bugs: [
+            {
+              id: "extra",
+              name: "\uBD88\uD544\uC694\uD55C \uC870\uAC74",
+              concept: "&& \uC870\uAC74\uC774 \uD558\uB098 \uB354 \uBD99\uC5B4 \uB108\uBB34 \uC881\uC544\uC84C\uB2E4. \xD7\uB85C \uC870\uAC74 \uC0AD\uC81C",
+              mutate: (rs) => {
+                rs[2] = rule(all(cond("faction", "==", R), cond("attr.armed", "==", true), cond("attr.staff", "==", false)), "DETAIN");
+                return rs;
+              }
+            },
+            {
+              id: "inverted",
+              name: "\uB4A4\uC9D1\uD78C \uC870\uAC74",
+              concept: "== \uC640 != \uB97C \uBC14\uAFD4 \uC500",
+              mutate: (rs) => {
+                rs[4] = rule(cond("faction", "!=", R), "WATCH");
+                return rs;
+              }
+            }
+          ],
+          tests: () => [
+            { label: "\uB974\uB8E8\uC8FC \xB7 \uBB34\uC7A5 \xB7 \uC9C1\uC6D0", sample: P({ faction: R, attrs: { armed: true, staff: true } }), expect: "DETAIN" },
+            { label: "\uB974\uB8E8\uC8FC \xB7 \uBB34\uC7A5 \xB7 \uC678\uBD80\uC778", sample: P({ faction: R, attrs: { armed: true, staff: false } }), expect: "DETAIN" },
+            { label: "\uB974\uB8E8\uC8FC \xB7 \uBE44\uBB34\uC7A5", sample: P({ faction: R, attrs: { armed: false, staff: true } }), expect: "WATCH" },
+            { label: "\uB974\uB204\uC544\uB974 \xB7 \uBB34\uC7A5", sample: P({ faction: N, attrs: { armed: true, staff: false } }), expect: "PASS" },
+            { label: "\uBB34\uC18C\uC18D", sample: P({ faction: NONE, attrs: { armed: false, staff: false } }), expect: "PASS" }
+          ]
+        },
+        /* 25 · B3 · 2회차 ---------------------------------------------------- */
+        {
+          id: "press",
+          file: "canned_press.sys",
+          floor: "B3",
+          minCycle: 2,
+          title: "\uACBD\uD5D8 \uD1B5\uC870\uB9BC \uC555\uCC29 \uC624\uB958",
+          symptom: "\uB35C \uC775\uC740 \uACBD\uD5D8\uC774 \uD1B5\uC870\uB9BC\uC73C\uB85C \uD3EC\uC7A5\uB418\uACE0, \uC624\uC5FC\uB41C \uACBD\uD5D8\uC774 \uC11E\uC5EC \uB4E4\uC5B4\uAC04\uB2E4",
+          storage: "MEMORY",
+          blocks: "none",
+          effect: "exp",
+          effectText: "\uACBD\uD5D8 \uD1B5\uC870\uB9BC \uC0DD\uC0B0\uB7C9\uC774 \uC808\uBC18\uC73C\uB85C \uC904\uC5B4\uB4E0\uB2E4",
+          actions: { CAN: "\uD1B5\uC870\uB9BC\uC73C\uB85C \uD3EC\uC7A5\uD55C\uB2E4", AGE: "\uB354 \uC219\uC131\uC2DC\uD0A8\uB2E4", DUMP: "\uD3D0\uAE30\uD55C\uB2E4" },
+          fieldDocs: { distortion: "\uB4A4\uD2C0\uB9BC \uC218\uCE58 0~100", "attr.tainted": "\uC624\uC5FC\uB418\uC5C8\uB294\uAC00 true/false", "attr.ripeness": "\uC219\uC131\uB3C4 0~100" },
+          correct: [
+            note("canned_press.sys \xB7 \uACBD\uD5D8 \uD1B5\uC870\uB9BC \uC555\uCC29\uAE30"),
+            note("\uB4A4\uD2C0\uB9BC\uC774 \uC11E\uC600\uAC70\uB098 \uC624\uC5FC\uB41C \uACBD\uD5D8\uC740 \uD3D0\uAE30\uD55C\uB2E4"),
+            rule(cond("distortion", ">=", 50), "DUMP"),
+            rule(cond("attr.tainted", "==", true), "DUMP"),
+            note("\uC219\uC131\uB3C4 80 \uC774\uC0C1\uC774\uBA74 \uD3EC\uC7A5\uD558\uACE0, \uC544\uB2C8\uBA74 \uB354 \uC219\uC131\uC2DC\uD0A8\uB2E4"),
+            rule(cond("attr.ripeness", ">=", 80), "CAN"),
+            rule(any(), "AGE")
+          ],
+          bugs: [
+            {
+              id: "deleted",
+              name: "\uC9C0\uC6CC\uC9C4 \uC904",
+              concept: "\uAF2D \uD544\uC694\uD55C \uC904\uC774 \uC0AD\uC81C\uB418\uC5B4 \uC788\uB2E4. \uC8FC\uC11D\uC744 \uBCF4\uACE0 '\uB418\uC0B4\uB9AC\uAE30'",
+              mutate: (rs) => {
+                rs[3] = off(rs[3]);
+                return rs;
+              }
+            },
+            {
+              id: "two",
+              name: "\uB450 \uAD70\uB370 \uC624\uB958",
+              concept: "\uC9C0\uC6CC\uC9C4 \uC904 + \uACBD\uACC4\uAC12. \uB450 \uC904\uC744 \uD568\uAED8 \uACE0\uCCD0\uC57C \uD55C\uB2E4",
+              mutate: (rs) => {
+                rs[2] = off(rs[2]);
+                rs[5] = rule(cond("attr.ripeness", ">", 80), "CAN");
+                return rs;
+              }
+            }
+          ],
+          tests: () => [
+            { label: "\uC219\uC131 90 \xB7 \uAE68\uB057", sample: P({ attrs: { ripeness: 90, tainted: false } }), expect: "CAN" },
+            { label: "\uC219\uC131 80 \xB7 \uAE68\uB057", sample: P({ attrs: { ripeness: 80, tainted: false } }), expect: "CAN" },
+            { label: "\uC219\uC131 40 \xB7 \uAE68\uB057", sample: P({ attrs: { ripeness: 40, tainted: false } }), expect: "AGE" },
+            { label: "\uC219\uC131 95 \xB7 \uC624\uC5FC", sample: P({ attrs: { ripeness: 95, tainted: true } }), expect: "DUMP" },
+            { label: "\uC219\uC131 85 \xB7 \uB4A4\uD2C0\uB9BC 60", sample: P({ distortion: 60, attrs: { ripeness: 85, tainted: false } }), expect: "DUMP" }
+          ]
+        },
+        /* 26 · ??? · 2회차 --------------------------------------------------- */
+        {
+          id: "scenario",
+          file: "scenario_script.sys",
+          floor: "???",
+          minCycle: 2,
+          title: "\uC2DC\uB098\uB9AC\uC624 \uB300\uBCF8 \uC624\uB958",
+          symptom: "\uC774\uBC88 \uD68C\uCC28\uC758 \uC7A5\uBA74\uB4E4\uC774 \uC21C\uC11C \uC5C6\uC774 \uC7AC\uC0DD\uB418\uACE0 \uC788\uB2E4",
+          storage: "FATE",
+          blocks: "none",
+          effect: "requests",
+          effectText: "\uBAA8\uB4E0 \uCE35\uC758 \uD589\uB3D9 \uBA85\uB839 \uC694\uCCAD \uC720\uD6A8 \uC2DC\uAC04\uC774 \uC808\uBC18\uC73C\uB85C \uC904\uC5B4\uB4E0\uB2E4",
+          actions: { PLAY: "\uC7A5\uBA74\uC744 \uC7AC\uC0DD\uD55C\uB2E4", WAIT: "\uB4A4\uB85C \uBBF8\uB8EC\uB2E4", CUT: "\uC7A5\uBA74\uC744 \uC9C0\uC6B4\uB2E4" },
+          fieldDocs: { "attr.canon": "\uC815\uD574\uC9C4 \uC6B4\uBA85\uC5D0 \uC788\uB294 \uC7A5\uBA74\uC778\uAC00 true/false", "attr.act": "\uC774 \uC7A5\uBA74\uC774 \uC18D\uD55C \uB9C9 1~3", "attr.currentAct": "\uC9C0\uAE08 \uC9C4\uD589 \uC911\uC778 \uB9C9 1~3" },
+          correct: [
+            note("scenario_script.sys \xB7 \uD68C\uCC28 \uB300\uBCF8"),
+            note("\uC6B4\uBA85\uC5D0 \uC5C6\uB294 \uC7A5\uBA74\uC740 \uC9C0\uC6B4\uB2E4"),
+            rule(cond("attr.canon", "==", false), "CUT"),
+            note("\uC9C0\uAE08 \uB9C9\uC758 \uC7A5\uBA74\uC740 \uC7AC\uC0DD\uD558\uACE0, \uB4A4 \uB9C9\uC758 \uC7A5\uBA74\uC740 \uBBF8\uB8EC\uB2E4. \uC9C0\uB098\uAC04 \uB9C9\uC740 \uC9C0\uC6B4\uB2E4"),
+            rule(ref("attr.act", "==", "attr.currentAct"), "PLAY"),
+            rule(ref("attr.act", ">", "attr.currentAct"), "WAIT"),
+            rule(any(), "CUT")
+          ],
+          bugs: [
+            {
+              id: "ref-op",
+              name: "\uD544\uB4DC\uB07C\uB9AC \uBE44\uAD50 \uC2E4\uC218",
+              concept: "\uD544\uB4DC\uC640 \uD544\uB4DC\uB97C \uBE44\uAD50\uD560 \uB54C > \uC640 < \uB97C \uBC14\uAFD4 \uC500",
+              mutate: (rs) => {
+                rs[5] = rule(ref("attr.act", "<", "attr.currentAct"), "WAIT");
+                return rs;
+              }
+            },
+            {
+              id: "two",
+              name: "\uB450 \uAD70\uB370 \uC624\uB958",
+              concept: "\uB4A4\uC9D1\uD78C \uAC12 + \uC798\uBABB\uB41C \uCC98\uBD84. \uB450 \uC904\uC744 \uD568\uAED8 \uACE0\uCCD0\uC57C \uD55C\uB2E4",
+              mutate: (rs) => {
+                rs[2] = rule(cond("attr.canon", "==", true), "CUT");
+                rs[4] = rule(ref("attr.act", "==", "attr.currentAct"), "WAIT");
+                return rs;
+              }
+            }
+          ],
+          tests: () => [
+            { label: "1\uB9C9 \uC7A5\uBA74 \xB7 \uC9C0\uAE08 1\uB9C9", sample: P({ attrs: { canon: true, act: 1, currentAct: 1 } }), expect: "PLAY" },
+            { label: "2\uB9C9 \uC7A5\uBA74 \xB7 \uC9C0\uAE08 1\uB9C9", sample: P({ attrs: { canon: true, act: 2, currentAct: 1 } }), expect: "WAIT" },
+            { label: "1\uB9C9 \uC7A5\uBA74 \xB7 \uC9C0\uAE08 2\uB9C9", sample: P({ attrs: { canon: true, act: 1, currentAct: 2 } }), expect: "CUT" },
+            { label: "\uC6B4\uBA85 \uBC16 \uC7A5\uBA74 \xB7 2\uB9C9", sample: P({ attrs: { canon: false, act: 2, currentAct: 2 } }), expect: "CUT" },
+            { label: "3\uB9C9 \uC7A5\uBA74 \xB7 \uC9C0\uAE08 1\uB9C9", sample: P({ attrs: { canon: true, act: 3, currentAct: 1 } }), expect: "WAIT" }
+          ]
+        },
+        /* 27 · B2 · 3회차 ---------------------------------------------------- */
+        {
+          id: "tailor",
+          file: "tailor_queue.sys",
+          floor: "B2",
+          minCycle: 3,
+          title: "\uC7AC\uB2E8 \uB300\uAE30\uC5F4 \uC624\uB958",
+          symptom: "\uD669\uAE08\uAC00\uC8FD \uC7AC\uB2E8 \uC21C\uC11C\uAC00 \uB4A4\uC5C9\uCF1C \uAC12\uC744 \uCE58\uB974\uC9C0 \uC54A\uC740 \uC190\uB2D8\uC774 \uBA3C\uC800 \uC7AC\uB2E8\uBC1B\uB294\uB2E4",
+          storage: "ITEM",
+          blocks: "none",
+          effect: "clock",
+          effectText: "\uADFC\uBB34 \uC2DC\uAC04\uC774 1.5\uBC30 \uBE60\uB974\uAC8C \uD750\uB978\uB2E4",
+          actions: { FIRST: "\uBA3C\uC800 \uC7AC\uB2E8\uD55C\uB2E4", NEXT: "\uBCF4\uD1B5 \uC21C\uC11C\uB85C", LAST: "\uB9E8 \uB4A4\uB85C \uBCF4\uB0B8\uB2E4" },
+          fieldDocs: { grade: "\uACE0\uAC1D \uB4F1\uAE09 0~5", hasItem: 'customer.has("\uC544\uC774\uD15C")', "attr.paid": "\uAC12\uC744 \uCE58\uB800\uB294\uAC00 true/false" },
+          correct: [
+            note("tailor_queue.sys \xB7 B2 \uC7AC\uB2E8 \uB300\uAE30\uC5F4"),
+            note("\uAC12\uC744 \uCE58\uB974\uC9C0 \uC54A\uC740 \uC790\uB294 \uB9E8 \uB4A4"),
+            rule(cond("attr.paid", "==", false), "LAST"),
+            note("\uD669\uAE08\uAC00\uC8FD\uC744 \uAC00\uC838\uC628 4\uB4F1\uAE09 \uC774\uC0C1\uC740 \uBA3C\uC800"),
+            rule(all(has("\uD669\uAE08\uAC00\uC8FD", true), cond("grade", ">=", 4)), "FIRST"),
+            rule(any(), "NEXT")
+          ],
+          bugs: [
+            {
+              id: "swap",
+              name: "\uB450 \uAD70\uB370 \uC624\uB958 \xB7 \uC21C\uC11C",
+              concept: "\uB450 \uC904\uC774 \uC790\uB9AC\uB97C \uBC14\uAFE8\uB2E4. \uC704\uC5D0\uC11C\uBD80\uD130 \uCC98\uC74C \uB9DE\uB294 \uC904 \uD558\uB098\uB9CC \uC2E4\uD589\uB41C\uB2E4",
+              mutate: (rs) => {
+                [rs[2], rs[4]] = [rs[4], rs[2]];
+                return rs;
+              }
+            },
+            {
+              id: "two",
+              name: "\uB450 \uAD70\uB370 \uC624\uB958",
+              concept: "\uB4A4\uC9D1\uD78C \uAC12 + \uBE60\uC9C4 \uC870\uAC74. \uB450 \uC904\uC744 \uD568\uAED8 \uACE0\uCCD0\uC57C \uD55C\uB2E4",
+              mutate: (rs) => {
+                rs[2] = rule(cond("attr.paid", "==", true), "LAST");
+                rs[4] = rule(has("\uD669\uAE08\uAC00\uC8FD", true), "FIRST");
+                return rs;
+              }
+            }
+          ],
+          tests: () => [
+            { label: "\uCE58\uB984 \xB7 \uD669\uAE08\uAC00\uC8FD \xB7 5\uB4F1\uAE09", sample: P({ grade: 5, items: ["\uD669\uAE08\uAC00\uC8FD"], attrs: { paid: true } }), expect: "FIRST" },
+            { label: "\uCE58\uB984 \xB7 \uD669\uAE08\uAC00\uC8FD \xB7 2\uB4F1\uAE09", sample: P({ grade: 2, items: ["\uD669\uAE08\uAC00\uC8FD"], attrs: { paid: true } }), expect: "NEXT" },
+            { label: "\uC548 \uCE58\uB984 \xB7 \uD669\uAE08\uAC00\uC8FD \xB7 5\uB4F1\uAE09", sample: P({ grade: 5, items: ["\uD669\uAE08\uAC00\uC8FD"], attrs: { paid: false } }), expect: "LAST" },
+            { label: "\uCE58\uB984 \xB7 \uBE48\uC190 \xB7 5\uB4F1\uAE09", sample: P({ grade: 5, attrs: { paid: true } }), expect: "NEXT" },
+            { label: "\uC548 \uCE58\uB984 \xB7 \uBE48\uC190 \xB7 1\uB4F1\uAE09", sample: P({ grade: 1, attrs: { paid: false } }), expect: "LAST" }
+          ]
         }
       ];
       for (const f of FAULTS) {
         f.clearable = f.storage === "MEMORY";
         f.minDay ??= 1;
+        f.minCycle ??= 1;
         f.effect ??= null;
       }
-      function spawnFault(rng = Math.random, exclude = [], day = Infinity) {
-        const pool = FAULTS.filter((f) => !exclude.includes(f.id) && f.minDay <= day);
+      var unlocked = (day = Infinity, cycle = Infinity) => FAULTS.filter((f) => f.minDay <= day && f.minCycle <= cycle);
+      function spawnFault(rng = Math.random, exclude = [], day = Infinity, cycle = Infinity, recent = []) {
+        const open = unlocked(day, cycle).filter((f) => !exclude.includes(f.id));
+        const fresh = open.filter((f) => !recent.includes(f.id));
+        const pool = fresh.length ? fresh : open;
         const tpl = pool[Math.floor(rng() * pool.length)];
         const bug = tpl.bugs[Math.floor(rng() * tpl.bugs.length)];
         const original = bug.mutate(clone(tpl.correct));
@@ -2173,7 +2594,7 @@ var Sisyphe = (() => {
         return { ok: results.every((r) => r.pass), errors: [], results };
       }
       var patchedLines = (fault) => countPatched(fault.original, fault.rules);
-      module.exports = { FAULTS, STORAGE_LABEL, spawnFault, verifyFault, patchedLines };
+      module.exports = { FAULTS, STORAGE_LABEL, unlocked, spawnFault, verifyFault, patchedLines };
     }
   });
 
@@ -3748,6 +4169,40 @@ var Sisyphe = (() => {
   const fmtClock = m => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(Math.floor(m % 60)).padStart(2, "0")}`;
   const rand = (a, b) => a + Math.random() * (b - a);
 
+  /* ============ 버전 · 패치 내역 ============ */
+  // 새 업데이트는 맨 앞에 추가하고 APP_VERSION을 올린다
+  const APP_VERSION = "1.2.0";
+  const PATCH_NOTES = [
+    { v: "1.2.0", date: "2026-10-22", title: "회차와 시나리오 완결", items: [
+      ["신규", "회차(시나리오) 시스템. 시스템 보존이 회차를 시작할 때 70에서 출발하고 날이 바뀌어도 이어진다. 퇴근하면 밤사이 +5, 아침에는 회차 시작값 아래로 내려가지 않는다"],
+      ["신규", "보존 회복. 판정 손실 없는 행동 명령 +2, 완벽한 판결 · 디버깅 복구 +1, 오류 · 운명 이탈 · 신앙 0인 층이 하나도 없으면 15분마다 +1. 90부터는 절반 속도"],
+      ["신규", "시나리오 완결. 보존이 100에 닿으면 경험 통조림 생산이 멈춘다. '회차 재고 정리'로 완결 보상(25 × 끝낸 회차)을 받고 다음 회차를 시작한다"],
+      ["변경", "회차가 오를수록 10일차의 한계를 넘어 오류 · 명령 요청 · 운명 이탈이 더 어려워지고, 회차 시작 보존이 5씩 낮아진다(최저 50). 대신 시간당 경험 통조림이 25%씩 늘어난다"],
+      ["신규", ".sys 오류 8종 추가(모두 27종). lost_and_found · price_tag(5일차~), fitting_room(6일차~), lift_log(7일차~), luxury_patrol(8일차~), canned_press · scenario_script(2회차~), tailor_queue(3회차~)"],
+      ["신규", "새 버그 유형: 지워진 줄, 잘못된 처분, 빠진 조건, 불필요한 조건, 두 군데 오류"],
+      ["신규", "이상 현상: 경험 통조림 생산량 절반(canned_press.sys)"],
+      ["변경", "방금 나온 오류는 한동안 다시 나오지 않는다"],
+      ["변경", "상태 표시줄 · 시작 화면에 회차 표시, 근무 기록 표에 회차 열 추가"],
+      ["신규", "시작 화면에 Patch Notes와 버전 표시"],
+      ["정리", "배포 파일에서 Claude 앱 전용 화면 설정 한 줄 제거"],
+    ] },
+    { v: "1.1.0", date: "2026-10-22", title: "플레이어 피드백 반영", items: [
+      ["신규", "단축키: Ctrl+P 일시정지, Ctrl+, / Ctrl+. 속도 조절, 입력 칸 밖에서 Space · 1 · 2 · 3"],
+      ["수정", "Ctrl+S를 누르면 브라우저 저장창이 뜨던 문제. 스크립트는 고칠 때마다 자동 저장된다"],
+      ["수정", "행동 명령 · 간수 출격 로그의 시각이 근무 시계와 어긋나던 문제"],
+      ["수정", "한글처럼 폭이 넓은 글자가 들어간 긴 입력값이 입력칸에서 잘리던 문제"],
+      ["변경", "르누아르의 영어 표기 Renoir → Lenoir (파일 이름 lenoir_*.nail, 진영 값 LENOIR). 예전에 저장한 스크립트는 자동으로 바뀐다"],
+    ] },
+    { v: "1.0.0", date: "2026-10-22", title: "첫 공개", items: [
+      ["신규", "계시(목소리 재생 · 행동 명령), 시스템 유지(.sys 디버깅), 간수 아바타 출격, 전체 콘솔(all_lenoir.nail)"],
+      ["신규", "근무 일차와 난이도 상승(10일차까지), 전체 재고 정리, 게임 오버와 소각, 경험 통조림 점수"],
+      ["신규", "시작 화면(Managing · Tutorial · Log · Settings), 6장 28단계 튜토리얼, 콘솔 매뉴얼"],
+      ["신규", "고치지 않은 오류가 쌓일수록 강해지는 화면 글리치"],
+      ["신규", "시작 화면 안내(PC 전용 · 깜빡임 주의 · 스포일러 · 비공식 팬게임)"],
+      ["변경", "뒤틀림의 영어 표기 distortion / DISTORTED, 상편 · 중편 · 하편 표기 제거"],
+    ] },
+  ];
+
   /* ============ 근무 설정 ============ */
   const DAY_START = 9 * 60, DAY_END = 18 * 60;
   const BASE_T = {
@@ -3772,14 +4227,42 @@ var Sisyphe = (() => {
     expPerHour: 6,              // 근무 1시간마다 쌓이는 경험 통조림 (1일차 기준)
     expDayBonus: 0.15,          // 일차가 하나 오를 때마다 시간당 증가량 +15%
     expFaultCut: 0.10,          // 고치지 않은 오류 하나당 시간당 증가량 -10% (1일차) → 10일차 -15%
+    // 회차(시나리오)
+    startIntegrity: 70,         // 1회차를 시작할 때의 보존. 회차마다 -5 (최저 50)
+    healCommand: 2,             // 판정 손실 없는 행동 명령 → 보존 +2
+    healDeploy: 1,              // 완벽한 판결 → 보존 +1
+    healFix: 1,                 // 디버깅으로 오류 복구 → 보존 +1
+    stableHealEvery: 15,        // 오류 · 운명 이탈 · 신앙 0인 층이 하나도 없으면 n분마다 보존 +1
+    overnightHeal: 5,           // 퇴근하고 다음 출근 사이에 오르는 보존 (최대 99, 회차 시작값 아래로는 내려가지 않는다)
+    cycleBonus: 25,             // 완결 뒤 회차 재고 정리 보상 (× 끝낸 회차)
+    cycleExpBonus: 0.25,        // 회차가 오를 때마다 시간당 경험 +25%
   };
 
   /* ============ 일차 · 난이도 ============ */
   // 날이 갈수록 관리가 어려워진다. 10일차에 가장 어려워지고 그 뒤로는 그대로다
   const HARDEST_DAY = 10;
-  function tuneFor(day) {
-    const d = Math.min(day, HARDEST_DAY) - 1;
+  // 회차가 오르면 10일차의 한계를 넘어 더 어려워진다
+  function tuneFor(day, cycle = 1) {
+    const d = Math.min(day, HARDEST_DAY) - 1, c = Math.max(0, (cycle || 1) - 1);
     const sc = (pair, f, lo) => pair.map((v, i) => Math.max(lo[i], Math.round(v * Math.pow(f, d))));
+    const t = tuneDay(d, sc);
+    if (c) {
+      t.faultEvery = t.faultEvery.map((v, i) => Math.max([12, 25][i], Math.round(v * Math.pow(0.88, c))));
+      t.firstFault = Math.max(8, t.firstFault - 2 * c);
+      t.maxFaults = Math.min(6, t.maxFaults + c);
+      t.requestTTL = Math.max(35, t.requestTTL - 5 * c);
+      t.devEvery = t.devEvery.map((v, i) => Math.max([18, 40][i], Math.round(v * Math.pow(0.9, c))));
+      t.devTTL = Math.max(18, t.devTTL - 3 * c);
+      t.faithDecay = +(t.faithDecay * (1 + 0.1 * c)).toFixed(2);
+      t.expireCost += 2 * c; t.devMissCost += 2 * c;
+    }
+    t.cycle = cycle || 1;
+    t.startIntegrity = Math.max(50, BASE_T.startIntegrity - 5 * c);
+    t.stableHealEvery = Math.round(BASE_T.stableHealEvery * (1 + 0.25 * c));
+    t.cycleExp = 1 + BASE_T.cycleExpBonus * c;
+    return t;
+  }
+  function tuneDay(d, sc) {
     return { ...BASE_T,
       faithDecay: +(BASE_T.faithDecay * (1 + 0.12 * d)).toFixed(2),
       requestEvery: sc(BASE_T.requestEvery, 0.93, [70, 140]),
@@ -3793,14 +4276,16 @@ var Sisyphe = (() => {
       expFaultCut: +(BASE_T.expFaultCut + 0.05 * d / (HARDEST_DAY - 1)).toFixed(4),
     };
   }
-  let T = tuneFor(1);
+  let T = tuneFor(1, 1);
   const summaryOf = t => `오류 ${t.faultEvery[0]}~${t.faultEvery[1]}분 간격 · 동시 최대 ${t.maxFaults}개 · 명령 요청 유효 ${t.requestTTL}분 · 이탈 출격 제한 ${t.devTTL}분 · 신앙 감소 분당 ${t.faithDecay}`;
-  const newFaultsOn = day => M.FAULTS.filter(t => t.minDay === day);
+  const newFaultsOn = (day, cycle = 1) => M.FAULTS.filter(t => t.minDay === day && t.minCycle <= cycle);
+  const cycleFaultsOn = cycle => M.FAULTS.filter(t => t.minCycle === cycle);
 
   // 진행 상황 (이 브라우저에만 저장)
   const PROG_KEY = "sisyphe-progress-v1";
   // history: 이번 관리자의 일차별 기록 · broken: 시스템이 망가진 채 소각을 기다리는 중 · best: 역대 최고 도달 일차
-  const freshProg = (best = 1, burned = 0) => ({ day: 1, best, startBest: best, totalExp: 0, history: [], broken: null, burned }); // startBest: 이번 관리자가 시작할 때의 역대 기록
+  // cycle: 지금 회차 · integrity: 다음 출근 때의 보존 (null이면 회차 시작값) · complete: 시나리오 완결 상태
+  const freshProg = (best = 1, burned = 0) => ({ day: 1, best, startBest: best, totalExp: 0, history: [], broken: null, burned, cycle: 1, integrity: null, complete: false }); // startBest: 이번 관리자가 시작할 때의 역대 기록
   let PROG = freshProg();
   try {
     const p = JSON.parse(localStorage.getItem(PROG_KEY) || "null");
@@ -3828,7 +4313,7 @@ var Sisyphe = (() => {
   }
   function newDay() {
     const keepSpeed = G && G.speed > 0 ? G.speed : (SET.speed || 1);
-    T = tuneFor(PROG.day);
+    T = tuneFor(PROG.day, PROG.cycle);
     let scripts = {};
     try {
       const raw = localStorage.getItem("sisyphe-scripts-v2") || "{}";
@@ -3840,8 +4325,10 @@ var Sisyphe = (() => {
     staleScripts.length = 0;
     G = {
       day: PROG.day,
-      clock: DAY_START, speed: keepSpeed, integrity: 100, exp: 0,
-      stats: { voices: 0, commands: 0, debugged: 0, cleared: 0, expired: 0, denied: 0, deployed: 0, missed: 0, hidden: 0, timeExp: 0, judgeExp: 0 },
+      clock: DAY_START, speed: keepSpeed, exp: 0,
+      integrity: Math.max(1, Math.min(100, PROG.integrity ?? T.startIntegrity)), cycle: PROG.cycle || 1, complete: !!PROG.complete,
+      healAcc: 0, stableAcc: 0, recentFaults: [],
+      stats: { voices: 0, commands: 0, debugged: 0, cleared: 0, expired: 0, denied: 0, deployed: 0, missed: 0, hidden: 0, timeExp: 0, judgeExp: 0, cycles: 0, cycleExp: 0, healed: 0 },
       floors: Object.fromEntries(FLOORS.map(f => [f.id, {
         id: f.id, faith: Math.round(rand(55, 85)), request: null,
         nextRequest: DAY_START + rand(10, 180), lastVoice: -999,
@@ -3889,6 +4376,11 @@ var Sisyphe = (() => {
       G.faithlessAcc += min * faithless;
       while (G.faithlessAcc >= T.faithlessDrainEvery) { G.faithlessAcc -= T.faithlessDrainEvery; hurt(1); }
     }
+    // 오류도, 운명 이탈도, 신앙을 잃은 층도 없으면 시나리오가 운명대로 흘러가며 보존이 천천히 오른다
+    if (!G.faults.length && !G.devs.length && !faithless) {
+      G.stableAcc += min;
+      while (G.stableAcc >= T.stableHealEvery) { G.stableAcc -= T.stableHealEvery; heal(1); }
+    }
     G.expAcc += expRate() * min / 60;
     while (G.expAcc >= 1) { G.expAcc -= 1; G.exp++; G.stats.timeExp++; }
     if (G.clock >= DAY_END) return endDay();
@@ -3896,8 +4388,31 @@ var Sisyphe = (() => {
     if (uiAcc >= 1) { uiAcc = 0; drawLive(); }
   }
   /** 지금의 시간당 경험 통조림 증가량 */
-  const baseRate = () => T.expPerHour * (1 + T.expDayBonus * (Math.min(G.day, HARDEST_DAY) - 1));
-  function expRate() { return Math.max(0, baseRate() * (1 - T.expFaultCut * G.faults.length)); }
+  const baseRate = () => T.expPerHour * (1 + T.expDayBonus * (Math.min(G.day, HARDEST_DAY) - 1)) * (T.cycleExp || 1);
+  function expRate() {
+    if (G.complete) return 0; // 완결된 시나리오에서는 새 경험이 생기지 않는다
+    return Math.max(0, baseRate() * (1 - T.expFaultCut * G.faults.length) * (effectOn("exp") ? 0.5 : 1));
+  }
+  /** 보존 회복. 90부터는 2점을 모아야 1 오른다. 100에 닿으면 이번 회차의 시나리오가 완결된다 */
+  function heal(n) {
+    if (G.over || G.complete || n <= 0) return;
+    G.healAcc += n;
+    while (G.integrity < 100) {
+      const cost = G.integrity >= 90 ? 2 : 1;
+      if (G.healAcc < cost) break;
+      G.healAcc -= cost; G.integrity++; G.stats.healed++;
+    }
+    if (G.integrity >= 100) completeScenario();
+  }
+  function completeScenario() {
+    if (G.complete || TUT.on || G.tutorial) return;
+    G.complete = true; G.integrity = 100;
+    PROG.complete = true; PROG.cycle = G.cycle; saveProg();
+    out(`[${fmtClock(G.clock)}] SYS   시나리오 완결 — ${G.cycle}회차의 이야기가 운명대로 끝까지 흘러갔다. 시스템 보존 100`, "L-OK");
+    out(`      더 이상 새로운 경험이 생기지 않는다. 경험 통조림 생산 정지`, "L-WARN");
+    out(`[MANUAL] 탐색기의 '회차 재고 정리'로 백화점을 초기화하고 ${G.cycle + 1}회차를 시작하라. 완결 보상 +${T.cycleBonus * G.cycle} · 다음 회차는 더 어렵다`, "L-HINT");
+    drawWipe(); drawLive();
+  }
   function hurt(n) {
     G.integrity = Math.max(0, G.integrity - n);
     if (TUT.on) { G.integrity = Math.max(1, G.integrity); return; } // 연습 근무는 무너지지 않는다
@@ -3978,7 +4493,8 @@ var Sisyphe = (() => {
     st.request = null; st.nextRequest = G.clock + rand(...T.requestEvery);
     G.exp += r.sum.experience; G.stats.judgeExp += r.sum.experience; G.stats.commands++;
     if (loss > 0) out(`[MANUAL] ${f.id} 행동 명령 결과: 시스템 보존 -${loss}. 로그에서 깎인 지점을 확인하고 스크립트를 고쳐라`, "L-HINT");
-    else out(`[MANUAL] ${f.id} 행동 명령 완료. 경험 통조림 +${r.sum.experience}`, "L-BC");
+    else out(`[MANUAL] ${f.id} 행동 명령 완료. 경험 통조림 +${r.sum.experience}${G.complete ? "" : ` · 시스템 보존 +${T.healCommand}`}`, "L-BC");
+    if (loss === 0) heal(T.healCommand);
     tutEvent("command", { floor: st.id, loss, exp: r.sum.experience });
     hurt(loss);
     return loss;
@@ -4014,7 +4530,8 @@ var Sisyphe = (() => {
 
     /* ============ 시스템 유지 ============ */
   function spawnFault() {
-    const fault = M.spawnFault(Math.random, G.faults.map(x => x.tpl.id), G.day);
+    const fault = M.spawnFault(Math.random, G.faults.map(x => x.tpl.id), G.day, G.cycle, G.recentFaults);
+    G.recentFaults = [fault.tpl.id, ...G.recentFaults].slice(0, 6); // 방금 나온 오류는 한동안 다시 고르지 않는다
     fault.uid = ++G.faultSeq; fault.floor = fault.tpl.floor; fault.since = G.clock;
     G.faults.push(fault);
     out(`[${fmtClock(G.clock)}] FAULT ${fault.tpl.floor} · ${fault.tpl.file} — ${fault.tpl.title}`, "L-FAULT");
@@ -4041,7 +4558,7 @@ var Sisyphe = (() => {
     const pass = r.results.filter(x => x.pass).length;
     out(`${r.ok ? "OK  " : "FAIL"}  ${pass}/${r.results.length} tests passed`, r.ok ? "L-OK" : "L-ERR");
     if (r.ok) {
-      G.faults = G.faults.filter(x => x !== fault); G.stats.debugged++;
+      G.faults = G.faults.filter(x => x !== fault); G.stats.debugged++; heal(T.healFix);
       tutEvent("fixed", fault.tpl.id);
       out(`[MANUAL] ${fault.tpl.file} 복구 완료 (디버깅). 원인 분류: ${fault.bug.name} — ${fault.bug.concept}`, "L-BC");
       failedLines = new Set();
@@ -4053,21 +4570,29 @@ var Sisyphe = (() => {
   const WIPE_FAITH = 50; // 전체 재고 정리 뒤 르누아르 신앙
   /** 전체 재고 정리 버튼 그리기 */
   function drawWipe() {
-    const btn = $("b-wipe"), left = G.wipesLeft;
-    btn.disabled = G.busy || G.over || left <= 0;
+    const btn = $("b-wipe"), left = G.wipesLeft, done = G.complete;
+    btn.disabled = G.busy || G.over || (!done && left <= 0);
     btn.classList.toggle("armed", !!G.wipeArmed);
+    btn.classList.toggle("cycle", done && !G.wipeArmed);
+    btn.title = done ? "시나리오가 완결되었다. 백화점을 초기화하고 다음 회차를 시작한다 (횟수 제한 없음)" : "백화점 전체의 기억을 지운다. 하루 1회";
     btn.innerHTML = G.wipeArmed
       ? `한 번 더 누르면 발동 <small>취소: 3초</small>`
+      : done ? `회차 재고 정리 <small>완결 · ${G.cycle + 1}회차로</small>`
       : `전체 재고 정리 <small>${left > 0 ? `남은 ${left}회` : "오늘 사용함"}</small>`;
   }
 
   /** 첫 클릭은 확인 대기, 3초 안에 다시 누르면 발동 */
   function wipeClick() {
     if (TUT.on) { showPanel("term"); return out("WARN  튜토리얼에서는 전체 재고 정리를 실행하지 않는다. 설명만 보고 넘어가자", "L-WARN"); }
-    if (G.busy || G.over || G.wipesLeft <= 0) return;
+    if (G.busy || G.over || (G.wipesLeft <= 0 && !G.complete)) return;
     if (!G.wipeArmed) {
       G.wipeArmed = setTimeout(() => { G.wipeArmed = 0; drawWipe(); }, 3000);
       showPanel("term");
+      if (G.complete) {
+        const nt = tuneFor(G.day, G.cycle + 1);
+        out(`WARN  회차 재고 정리: ${G.cycle}회차를 끝내고 ${G.cycle + 1}회차를 시작한다. 완결 보상 +${T.cycleBonus * G.cycle} · 시스템 보존 → ${nt.startIntegrity} · 기억 영역 오류 삭제 · 명령 요청 취소 · 신앙 ${WIPE_FAITH} · ${T.wipeCost}분 경과. 다음 회차는 오류가 더 잦고 동시에 최대 ${nt.maxFaults}개까지 뜬다. 한 번 더 누르면 발동한다`, "L-WARN");
+        return drawWipe();
+      }
       out(`WARN  전체 재고 정리: 모든 층의 기억이 지워진다. 기억 영역 오류 ${G.faults.filter(x => x.tpl.clearable).length}건 삭제 · 모든 명령 요청 취소 · 르누아르 신앙 ${WIPE_FAITH}으로 초기화 · ${T.wipeCost}분 경과. 한 번 더 누르면 발동한다`, "L-WARN");
       return drawWipe();
     }
@@ -4077,10 +4602,12 @@ var Sisyphe = (() => {
 
   async function wipeNow() {
     const viewFault = G.view.kind === "fault" ? curFault() : null;
-    G.wipesLeft--; G.busy = true; lockUI(true); drawWipe();
+    const cycleWipe = G.complete; // 완결 상태의 재고 정리는 하루 횟수를 쓰지 않고 다음 회차를 연다
+    if (!cycleWipe) G.wipesLeft--;
+    G.busy = true; lockUI(true); drawWipe();
     showPanel("term");
-    prompt("./inventory_clearance --all");
-    out(`[${fmtClock(G.clock)}] SYS   전체 재고 정리 발동 — 시지프 백화점 전 층`, "L-SYS");
+    prompt(cycleWipe ? "./inventory_clearance --all --next-cycle" : "./inventory_clearance --all");
+    out(`[${fmtClock(G.clock)}] SYS   ${cycleWipe ? `회차 재고 정리 발동 — ${G.cycle}회차 종료` : "전체 재고 정리 발동"} — 시지프 백화점 전 층`, "L-SYS");
     await clearanceOverlay();
     // 기억 영역의 오류만 지워진다. 아이템 영역과 운명 기록은 남는다
     const gone = G.faults.filter(x => x.tpl.clearable), kept = G.faults.filter(x => !x.tpl.clearable);
@@ -4093,13 +4620,27 @@ var Sisyphe = (() => {
     gone.forEach(x => out(`      복구: ${x.floor} · ${x.tpl.file} (기억 영역)`, "L-OK"));
     kept.forEach(x => out(`      남음: ${x.floor} · ${x.tpl.file} (${M.STORAGE_LABEL[x.tpl.storage]}) — 직접 고쳐야 한다`, "L-ERR"));
     if (cancelled) out(`      명령을 기다리던 르누아르 ${cancelled}개 층이 흩어졌다 (요청 취소, 손실 없음)`, "L-DIM");
+    if (cycleWipe) {
+      const bonus = T.cycleBonus * G.cycle;
+      G.exp += bonus; G.stats.cycleExp += bonus; G.stats.cycles++;
+      G.cycle++; G.complete = false;
+      T = tuneFor(G.day, G.cycle);
+      G.integrity = T.startIntegrity; G.healAcc = 0; G.stableAcc = 0;
+      G.nextFault = Math.min(G.nextFault, G.clock + T.wipeCost + T.firstFault);
+      PROG.cycle = G.cycle; PROG.complete = false; PROG.integrity = G.integrity; saveProg();
+      out(`      완결 보상: 경험 통조림 +${bonus}`, "L-OK");
+      out(`      ${G.cycle}회차 시작. 시스템 보존 ${G.integrity} · ${summaryOf(T)}`, "L-WARN");
+      const nf = cycleFaultsOn(G.cycle);
+      if (nf.length) out(`      이번 회차부터 나타나는 오류: ${nf.map(t => `${t.file}${t.effect ? ` (이상 현상: ${t.effectText})` : ""}`).join(" · ")}`, "L-WARN");
+    }
     G.busy = false; lockUI(false);
     // 재고 정리에 걸린 시간도 근무 시간이다. 그동안 운명 이탈과 새 오류는 그대로 흘러간다
     advance(T.wipeCost);
     if (G.over) return;
     for (const st of Object.values(G.floors)) if (hasVoice(st.id)) st.faith = WIPE_FAITH;
     out(`[${fmtClock(G.clock)}] SYS   재고 정리 완료. 손님들은 아무것도 기억하지 못한다. 아이템과 눈알은 그대로 남았다`, "L-SYS");
-    out(`[MANUAL] 1F~5F 르누아르의 신앙이 ${WIPE_FAITH}으로 초기화되었다. 오늘 남은 전체 재고 정리: ${G.wipesLeft}회`, "L-HINT");
+    out(cycleWipe ? `[MANUAL] ${G.cycle}회차가 시작되었다. 1F~5F 르누아르의 신앙은 ${WIPE_FAITH}. 흠 없는 계시와 판결, 수리로 보존을 다시 100까지 끌어올려라`
+      : `[MANUAL] 1F~5F 르누아르의 신앙이 ${WIPE_FAITH}으로 초기화되었다. 오늘 남은 전체 재고 정리: ${G.wipesLeft}회`, "L-HINT");
     if (viewFault && !G.faults.includes(viewFault)) openFloor(viewFault.floor);
     idle(); drawAll();
   }
@@ -4166,8 +4707,8 @@ var Sisyphe = (() => {
     const loss = (S.DEFAULTS.INTEGRITY - r.sum.integrity) * T.deployScale;
     G.devs = G.devs.filter(x => x !== dv); G.stats.deployed++; G.view.dev = null;
     tutEvent("deploy", loss);
-    if (loss === 0) { G.exp += 1; G.stats.judgeExp += 1; }
-    out(loss === 0 ? "[MANUAL] 운명 이탈을 바로잡았다. 경험 통조림 +1" : `[MANUAL] 판결이 어긋났다. 시스템 보존 -${loss}. warden_avatar.nail을 고쳐라`, loss === 0 ? "L-BC" : "L-HINT");
+    if (loss === 0) { G.exp += 1; G.stats.judgeExp += 1; heal(T.healDeploy); }
+    out(loss === 0 ? `[MANUAL] 운명 이탈을 바로잡았다. 경험 통조림 +1${G.complete ? "" : ` · 시스템 보존 +${T.healDeploy}`}` : `[MANUAL] 판결이 어긋났다. 시스템 보존 -${loss}. warden_avatar.nail을 고쳐라`, loss === 0 ? "L-BC" : "L-HINT");
     G.busy = false; lockUI(false);
     hurt(loss); idle(); drawAll();
   }
@@ -4193,20 +4734,24 @@ var Sisyphe = (() => {
 
   /* ============ 하루의 끝 ============ */
   /** 오늘 근무 한 줄 기록 */
-  const recordOf = result => ({ day: G.day, result, at: fmtClock(Math.min(G.clock, DAY_END)), integrity: G.integrity, exp: G.exp, wipes: T.wipeUses - G.wipesLeft, stats: { ...G.stats } });
+  const recordOf = result => ({ day: G.day, cycle: G.cycle, result, at: fmtClock(Math.min(G.clock, DAY_END)), integrity: G.integrity, exp: G.exp, wipes: T.wipeUses - G.wipesLeft, stats: { ...G.stats } });
 
   function endDay() {
     if (G.over) return;
     G.over = true; G.busy = false;
     const s = G.stats, day = G.day;
     PROG.history.push(recordOf("퇴근"));
-    PROG.totalExp += G.exp; PROG.day = day + 1; PROG.best = Math.max(PROG.best, PROG.day); saveProg();
-    const next = tuneFor(PROG.day), unlock = newFaultsOn(PROG.day);
+    PROG.totalExp += G.exp; PROG.day = day + 1; PROG.best = Math.max(PROG.best, PROG.day);
+    PROG.cycle = G.cycle; PROG.complete = G.complete;
+    // 밤사이 조금 회복한다. 나쁜 하루가 다음 날까지 무너뜨리지 않도록 회차 시작값 아래로는 내려가지 않고, 밤에는 완결되지 않는다
+    PROG.integrity = G.complete ? 100 : Math.min(99, Math.max(T.startIntegrity, G.integrity + T.overnightHeal));
+    saveProg();
+    const next = tuneFor(PROG.day, PROG.cycle), unlock = newFaultsOn(PROG.day, PROG.cycle);
     $("end-sub").textContent = `${day}일차 · 18:00`;
-    $("end-msg").innerHTML = `퇴근 좀 하자고. ${day}일차 근무가 끝났다. 내일 09:00에 다시 출근한다.<br><br><b>${PROG.day}일차</b>${PROG.day > HARDEST_DAY ? " (가장 어려운 단계)" : ""} · ${esc(summaryOf(next))}`
+    $("end-msg").innerHTML = `퇴근 좀 하자고. ${day}일차 근무가 끝났다. 내일 09:00에 다시 출근한다.<br><br><b>${PROG.day}일차 · ${PROG.cycle}회차</b>${PROG.day > HARDEST_DAY ? " (가장 어려운 단계)" : ""} · 시스템 보존 <b>${PROG.integrity}</b>로 출근${PROG.complete ? " · <b>시나리오 완결 상태</b>: 회차 재고 정리로 다음 회차를 열어야 경험이 다시 쌓인다" : ` (밤사이 +${T.overnightHeal}, 최소 ${T.startIntegrity})`}<br>${esc(summaryOf(next))}`
       + (unlock.length ? `<br>새로 나타나는 오류: ${unlock.map(t => esc(t.file)).join(", ")}` : "");
     $("end-stats").innerHTML = [
-      ["일차", day], ["시스템 보존", G.integrity], ["오늘 점수 (경험 통조림)", G.exp], ["· 근무 시간", s.timeExp], ["· 판정 보너스", s.judgeExp], ["누적 점수", PROG.totalExp], ["목소리 재생", s.voices], ["행동 명령", s.commands],
+      ["일차 · 회차", `${day}일차 · ${G.cycle}회차`], ["시스템 보존", G.integrity], ["오늘 점수 (경험 통조림)", G.exp], ["· 근무 시간", s.timeExp], ["· 판정 보너스", s.judgeExp], ["· 완결 보상", s.cycleExp], ["보존 회복", `+${s.healed}`], ["완결한 회차", s.cycles], ["누적 점수", PROG.totalExp], ["목소리 재생", s.voices], ["행동 명령", s.commands],
       ["놓친 명령 요청", s.expired], ["간수 출격", s.deployed], ["놓친 운명 이탈", s.missed + s.hidden], ["디버깅으로 복구", s.debugged], ["재고 정리로 복구", s.cleared], ["전체 재고 정리", T.wipeUses - G.wipesLeft], ["남은 오류", G.faults.length],
     ].map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
     $("restart").textContent = `${PROG.day}일차 출근`;
@@ -4236,8 +4781,8 @@ var Sisyphe = (() => {
   /* ============ 기록 ============ */
   function daysTable(hist) {
     const resultText = r => r.result === "붕괴" ? `붕괴 ${r.at}` : r.result === "소각" ? `소각 ${r.at}` : "퇴근";
-    return `<table><thead><tr><th>일차</th><th>결과</th><th>보존</th><th>점수</th><th>디버깅</th><th>출격</th></tr></thead><tbody>`
-      + hist.map(r => `<tr class="${r.result === "퇴근" ? "" : "bad"}"><td>${r.day}일차</td><td>${esc(resultText(r))}</td><td>${r.integrity}</td><td>${r.exp}</td><td>${r.stats?.debugged ?? 0}</td><td>${r.stats?.deployed ?? 0}</td></tr>`).join("")
+    return `<table><thead><tr><th>일차</th><th>회차</th><th>결과</th><th>보존</th><th>점수</th><th>디버깅</th><th>출격</th></tr></thead><tbody>`
+      + hist.map(r => `<tr class="${r.result === "퇴근" ? "" : "bad"}"><td>${r.day}일차</td><td>${r.cycle ?? 1}</td><td>${esc(resultText(r))}</td><td>${r.integrity}</td><td>${r.exp}</td><td>${r.stats?.debugged ?? 0}</td><td>${r.stats?.deployed ?? 0}</td></tr>`).join("")
       + `</tbody></table>`;
   }
   /** 이번 관리자의 기록을 표로 채운다 */
@@ -4889,8 +5434,11 @@ var Sisyphe = (() => {
     return `<h2 id="m-rules">근무 수치 기준</h2><dl class="tbl">`
       + row("근무 시간", `${fmtClock(DAY_START)} ~ ${fmtClock(DAY_END)} · 1× 속도에서 실제 1초 = 근무 1분`)
       + row("근무 일차", `지금 ${G.day}일차. 18:00에 퇴근하면 다음 날 09:00에 출근한다. 날이 갈수록 오류·명령 요청·운명 이탈이 잦아지고 유효 시간이 짧아지며, 새 종류의 오류가 풀린다(${HARDEST_DAY}일차까지). 시스템 보존이 0이 되면 게임 오버`)
-      + row("경험 통조림 (점수)", `근무 1시간마다 +${baseRate().toFixed(1)} (오늘 기준). 고치지 않은 오류 하나당 -${(T.expFaultCut * 100).toFixed(1)}% (1일차 10% → ${HARDEST_DAY}일차 15%). 판정 보너스는 따로 더해진다`)
-      + row("시스템 보존", "날마다 100에서 시작. 0이 되면 운명을 벗어난 이방인들이 시지프 시스템을 망가뜨린다")
+      + row("경험 통조림 (점수)", `근무 1시간마다 +${baseRate().toFixed(1)} (오늘 · 이번 회차 기준). 고치지 않은 오류 하나당 -${(T.expFaultCut * 100).toFixed(1)}% (1일차 10% → ${HARDEST_DAY}일차 15%). 회차가 오를 때마다 시간당 +${Math.round(BASE_T.cycleExpBonus * 100)}%. 시나리오 완결 상태에서는 0. 판정 보너스는 따로 더해진다`)
+      + row("시스템 보존", `시나리오가 운명대로 흘러가는 정도. 회차를 시작할 때 ${T.startIntegrity}(1회차 ${BASE_T.startIntegrity}, 회차마다 -5, 최저 50)에서 출발하고, 날이 바뀌어도 이어진다. 퇴근하면 밤사이 +${T.overnightHeal}(최대 99)이고, 다음 날 아침에는 회차 시작값 아래로 내려가지 않는다. 0이 되면 운명을 벗어난 이방인들이 시지프 시스템을 망가뜨린다`)
+      + row("보존 회복", `판정 손실 없는 행동 명령 +${T.healCommand} · 완벽한 판결 +${T.healDeploy} · 디버깅으로 복구 +${T.healFix} · 오류 · 운명 이탈 · 신앙 0인 층이 하나도 없으면 ${T.stableHealEvery}분마다 +1. 90부터는 절반 속도로 오른다`)
+      + row("시나리오 완결", `보존이 100에 닿으면 이번 회차의 시나리오가 완결되고, 그때부터 경험 통조림이 생기지 않는다. 탐색기의 '회차 재고 정리'(완결 상태에서만, 하루 횟수와 별개)로 백화점을 초기화하면 완결 보상(${BASE_T.cycleBonus} × 끝낸 회차)을 받고 다음 회차가 시작된다`)
+      + row("회차", `지금 ${G.cycle}회차. 회차가 오르면 ${HARDEST_DAY}일차의 한계를 넘어 오류가 더 잦고 동시에 더 많이 뜨며, 명령 요청 · 운명 이탈의 유효 시간이 짧아지고 놓쳤을 때의 손실이 커진다. 2회차 · 3회차에는 새 오류가 풀린다`)
       + row("게임 오버", "시스템이 붕괴하면 게임 오버 창이 뜨고, 그 뒤로는 콘솔의 어떤 것도 건드릴 수 없다. 창에 지금까지의 근무 기록이 나오고, 다음 관리자는 1일차부터 시작한다")
       + row("소각", "탐색기 맨 아래 버튼. 근무 중 언제든 두 번 눌러 시지프 시스템을 소각하고 게임을 스스로 끝낸다. 지금까지의 근무 기록이 나오고, 다음 관리자는 1일차부터 시작한다")
       + `<dt>— 계시</dt><dd></dd>`
@@ -4906,7 +5454,8 @@ var Sisyphe = (() => {
       + `<dt>— 시스템 유지</dt><dd></dd>`
       + row("시스템 오류", `${T.faultEvery[0]}~${T.faultEvery[1]}분 간격, 동시에 최대 ${T.maxFaults}개. 오류 하나당 ${T.faultDrainEvery}분마다 보존 -1`)
       + row("오류의 영향", "목소리 중계 오류는 모든 층의 목소리를, 그 밖의 오류는 해당 층의 행동 명령을 막는다. 유지 전용 층의 오류와 이상 현상 오류는 막지 않고 보존만 깎는다")
-      + row("이상 현상", M.FAULTS.filter(t => t.effect).map(t => `${t.file}(${t.minDay}일차~): ${t.effectText}`).join(" / "))
+      + row("이상 현상", M.FAULTS.filter(t => t.effect).map(t => `${t.file}(${t.minCycle > 1 ? t.minCycle + "회차" : t.minDay + "일차"}~): ${t.effectText}`).join(" / "))
+      + row("오류 종류", `지금까지 ${M.unlocked(G.day, G.cycle).length}종이 풀렸다 (전체 ${M.FAULTS.length}종). 방금 나온 오류는 한동안 다시 나오지 않는다`)
       + row("디버깅", `${S.DEFAULTS.PATCH_BUDGET}줄 이내로 고쳐 단위 테스트를 모두 통과하면 복구. 비용 없음`)
       + row("전체 재고 정리", `탐색기 '시스템 유지' 아래 버튼. 하루 ${T.wipeUses}회, 두 번 눌러야 발동. 모든 층의 기억 영역 오류 삭제, 명령 요청 전부 취소(손실 없음), ${T.wipeCost}분 경과(그동안 운명 이탈·새 오류는 그대로 진행), 끝나면 1F~5F 신앙 ${WIPE_FAITH}으로 초기화. 아이템 영역·운명 기록 오류는 남는다`)
       + `</dl>`;
@@ -5041,6 +5590,8 @@ var Sisyphe = (() => {
       + `<li><b>고치지 않은 오류</b>: 오류 하나당 시간당 증가량이 줄어든다. 1일차에는 하나당 10%, 날마다 조금씩 커져 ${HARDEST_DAY}일차부터 15%다(오늘은 ${(T.expFaultCut * 100).toFixed(1)}%). 상태 표시줄의 <code>+n/시</code>에 밑줄이 생기면 깎이고 있다는 뜻이다.</li>`
       + `<li><b>판정 보너스</b>: 층이 바라는 일을 해낸 판정마다 +1 (예: 진격 성공, 계시 전달, 숨은 문 찾기, 런웨이 탈환, 1층 복귀). 어떤 처분이 경험을 주는지는 각 층의 규정에 적혀 있다.</li>`
       + `<li>간수 출격의 판결이 모두 맞으면 +1.</li>`
+      + `<li><b>시나리오 완결</b>: 시스템 보존이 100에 닿으면 시간당 증가량이 0이 된다(상태 표시줄 '생산 정지'). 회차 재고 정리로 다음 회차를 열면 완결 보상(${BASE_T.cycleBonus} × 끝낸 회차)을 받고, 회차마다 시간당 증가량이 ${Math.round(BASE_T.cycleExpBonus * 100)}%씩 늘어난다.</li>`
+      + `<li><b>경험 통조림 압착 오류</b>(canned_press.sys, 2회차~)가 있는 동안에는 시간당 증가량이 절반이 된다.</li>`
       + `<li>하루 동안 모은 통조림은 퇴근할 때 누적 점수에 더해진다. 시스템이 망가진 날도 그때까지 모은 만큼은 점수에 남는다.</li>`
       + `<li>게임이 끝나면(소각 · 게임 오버) 누적 점수가 그 관리자의 최종 점수로 Log에 남는다.</li></ul>`;
   }
@@ -5106,7 +5657,7 @@ var Sisyphe = (() => {
       + `</ul>`
       + `<h3>단축키</h3><dl class="tbl">`
       + mrow("Enter", "시작 화면: Managing")
-      + mrow("T / L / S", "시작 화면: Tutorial / Log / Settings")
+      + mrow("T / L / S / P", "시작 화면: Tutorial / Log / Settings / Patch Notes")
       + mrow("Esc", "시작 화면의 Log · Settings: 메뉴로 돌아가기. 콘솔: 근무를 멈추고 시작 화면으로")
       + mrow("Ctrl+Enter (맥 Cmd+Enter)", "층: 행동 명령 · 전체 콘솔: 전체 실행 · 간수 화면: 출격 · .sys: ./verify")
       + mrow("Ctrl+P", "일시정지 · 다시 진행 (어디서든)")
@@ -5155,10 +5706,11 @@ var Sisyphe = (() => {
   function drawLive() {
     $("s-day").textContent = G.day;
     $("s-clock").textContent = fmtClock(G.clock);
-    $("s-int").textContent = G.integrity; $("s-int-wrap").className = G.integrity <= 30 ? "over" : "";
+    $("s-cycle").textContent = G.cycle;
+    $("s-int").textContent = G.complete ? "100 완결" : G.integrity; $("s-int-wrap").className = G.complete ? "done" : G.integrity <= 30 ? "over" : "";
     $("s-exp").textContent = G.exp;
     { const r = expRate(), full = baseRate();
-      $("s-rate").textContent = `+${r.toFixed(1)}/시`; $("s-rate").className = "rate" + (r < full - 0.01 ? " cut" : ""); }
+      $("s-rate").textContent = G.complete ? "생산 정지" : `+${r.toFixed(1)}/시`; $("s-rate").className = "rate" + (G.complete ? " stop" : r < full - 0.01 ? " cut" : ""); }
     drawTree();
     if (G.view.kind !== "fault" && !G.busy && !document.activeElement?.closest(".toolbar")) drawToolbar();
   }
@@ -5262,9 +5814,10 @@ var Sisyphe = (() => {
     document.querySelectorAll("#toolbar, #tree-floors, #tree-global, #tree-sys, #tree-warden").forEach(el => el._sig = null); // 새 근무: 이전 날의 버튼을 남기지 않는다
     term.innerHTML = "";
     out(`[09:00] SYS   ${G.day}일차 출근. 르누아르 담당 관리자 콘솔에 접속했다. (1× = 실제 1초에 근무 1분)`, "L-SYS");
+    out(`      ${G.cycle}회차 시나리오 · 시스템 보존 ${G.integrity}/100${G.complete ? " · 이미 완결된 시나리오다. 회차 재고 정리로 다음 회차를 열어라" : " · 흠 없는 계시와 판결, 수리로 보존이 오른다. 100에 닿으면 시나리오가 완결된다"}`, G.complete ? "L-WARN" : "L-DIM");
     if (G.day > 1) {
       out(`      오늘의 근무 강도 — ${summaryOf(T)}${G.day >= HARDEST_DAY ? " (가장 어려운 단계)" : ""}`, "L-WARN");
-      const nf = newFaultsOn(G.day);
+      const nf = newFaultsOn(G.day, G.cycle);
       if (nf.length) out(`      오늘부터 나타나는 오류: ${nf.map(t => `${t.file}${t.effect ? ` (이상 현상: ${t.effectText})` : ""}`).join(" · ")}`, "L-WARN");
     }
     out(`      계시: 1F~5F에는 목소리와 행동 명령, B1 · 6F · ???에는 행동 명령만 내린다. 전체 콘솔(ALL)은 모든 르누아르에게 먼저 적용된다.`, "L-DIM");
@@ -5529,9 +6082,9 @@ var Sisyphe = (() => {
 
     /* ---------- 6장 · 마무리 ---------- */
     { ch: "6장 · 마무리", title: "비상 수단: 재고 정리 · 소각", hl: ".wipe-wrap", code: true,
-      body: () => "<b>전체 재고 정리</b>는 하루 한 번, 백화점 전체의 기억을 지워 기억 영역 오류를 한꺼번에 없앤다. 대신 명령 요청이 취소되고 1시간이 흐르며 신앙이 50으로 돌아간다. 아이템 영역 · 운명 기록의 오류는 남는다.<br><b>소각</b>은 언제든 게임을 스스로 끝내고 기록을 남긴다. (튜토리얼에서는 둘 다 실행되지 않는다)" },
-    { ch: "6장 · 마무리", title: "날짜와 게임 오버",
-      body: () => "근무는 09:00~18:00. 퇴근하면 다음 날로 넘어가고, 날이 갈수록 요청 · 오류 · 이탈이 잦아지고 새 오류가 풀린다. 숫자는 매뉴얼의 '근무 수치 기준'에 모두 있다.",
+      body: () => "<b>전체 재고 정리</b>는 하루 한 번, 백화점 전체의 기억을 지워 기억 영역 오류를 한꺼번에 없앤다. 대신 명령 요청이 취소되고 1시간이 흐르며 신앙이 50으로 돌아간다. 아이템 영역 · 운명 기록의 오류는 남는다.<br><b>소각</b>은 언제든 게임을 스스로 끝내고 기록을 남긴다. (튜토리얼에서는 둘 다 실행되지 않는다)<br>시나리오가 <b>완결</b>되면 이 버튼이 노란 <b>회차 재고 정리</b>로 바뀐다. 하루 횟수와 상관없이 눌러 다음 회차를 연다." },
+    { ch: "6장 · 마무리", title: "날짜 · 회차 · 게임 오버",
+      body: () => "근무는 09:00~18:00. 퇴근하면 다음 날로 넘어가고, 날이 갈수록 요청 · 오류 · 이탈이 잦아지고 새 오류가 풀린다.<br><b>시스템 보존</b>은 회차를 시작할 때 70에서 출발해 날을 넘어 이어진다. 손실 없는 명령 · 판결 · 수리로 조금씩 오르고, <b>100에 닿으면 시나리오 완결</b>: 경험 통조림이 더 생기지 않으니 회차 재고 정리로 더 어려운 다음 회차를 연다. 숫자는 매뉴얼의 '근무 수치 기준'에 모두 있다.",
       read: { sel: "#m-rules", label: "근무 수치 기준", ms: 5000 },
       quiz: { q: "시스템 보존이 0이 되면?", opts: ["다음 날로 넘어간다", "운명을 벗어난 이방인들이 시스템을 망가뜨려 게임 오버", "보존이 100으로 돌아온다"], ans: 1,
         why: "게임 오버가 되면 콘솔이 잠기고, 기록이 남은 채 새 관리자가 1일차부터 시작한다.", miss: "'시스템 보존' 줄을 다시 보자." } },
@@ -5553,8 +6106,8 @@ var Sisyphe = (() => {
     if (G.broken) lockConsole(false);
     ["brokenbox", "endbox", "burnbox"].forEach(id => $(id).hidden = true);
     newDay();
-    T = tuneFor(1);
-    G.day = 1; G.tutorial = true;
+    T = tuneFor(1, 1);
+    G.day = 1; G.tutorial = true; G.cycle = 1; G.complete = false; G.integrity = T.startIntegrity;
     G.nextFault = G.nextDev = Infinity;
     for (const st of Object.values(G.floors)) {
       st.request = null; st.nextRequest = Infinity; st.faith = 72;
@@ -5722,7 +6275,7 @@ var Sisyphe = (() => {
     const worked = PROG.history.filter(r => r.result === "퇴근").length;
     const cur = PROG.broken
       ? `<span class="bad">현재 관리자 <b>${PROG.broken.day}일차 붕괴</b></span>`
-      : `<span>현재 관리자 <b>${G.day}일차</b>${worked ? ` · 퇴근 <b>${worked}일</b>` : ""}</span>`;
+      : `<span>현재 관리자 <b>${G.day}일차 · ${G.cycle}회차</b>${worked ? ` · 퇴근 <b>${worked}일</b>` : ""}</span><span>보존 <b>${G.complete ? "100 완결" : G.integrity}</b></span>`;
     $("ts-status").innerHTML = cur
       + `<span>점수 <b>${PROG.totalExp + (G.over ? 0 : G.exp)}</b></span>`
       + `<span>최고 점수 <b>${Math.max(bestScore(), PROG.totalExp + (G.over ? 0 : G.exp))}</b></span>`
@@ -5730,7 +6283,7 @@ var Sisyphe = (() => {
       + `<span>지난 관리자 <b>${ARCHIVE.length}명</b></span>`;
     $("ts-manage-sub").textContent = PROG.broken ? "시스템이 망가져 있다 — 게임 오버 기록 확인"
       : G.clock > DAY_START + 0.5 && !G.over ? `${G.day}일차 ${fmtClock(G.clock)}부터 이어서`
-      : `${G.day}일차 09:00 출근`;
+      : `${G.day}일차 09:00 출근 · ${G.cycle}회차`;
   }
 
   async function bootLines() {
@@ -5775,9 +6328,28 @@ var Sisyphe = (() => {
     $("ts-panel").hidden = v === "menu";
     if (v === "log") drawLog();
     if (v === "settings") drawSettings();
+    if (v === "patch") drawPatch();
     if (v === "menu") $("ts-manage").focus();
   }
   const panelHead = t => `<div class="ts-ph"><b>${t}</b><button id="ts-back">← 돌아가기 <span style="opacity:.6">Esc</span></button></div>`;
+
+  /** Patch Notes · 버전별 업데이트 내역 */
+  function drawPatch() {
+    const kc = { 신규: "new", 수정: "fix", 변경: "chg" };
+    $("ts-panel").innerHTML = panelHead("Patch Notes · 패치 내역")
+      + `<div class="ts-pb">`
+      + PATCH_NOTES.map((n, i) => `<section class="pn"><h4>v${esc(n.v)}<span class="d">${esc(n.date)}</span>${i === 0 ? '<span class="cur">현재 버전</span>' : ""}</h4><p>${esc(n.title)}</p><ul>`
+        + n.items.map(([k, t]) => `<li><span class="k ${kc[k] || ""}">${esc(k)}</span><span>${esc(t)}</span></li>`).join("") + `</ul></section>`).join("")
+      + `</div>`;
+    $("ts-back").onclick = () => showTitleView("menu");
+    if (SET.seenVer !== APP_VERSION) { SET.seenVer = APP_VERSION; saveSet(); patchBadge(); }
+    $("ts-back").focus();
+  }
+  function patchBadge() {
+    $("ts-patch-badge").hidden = SET.seenVer === APP_VERSION;
+    $("ts-patch-sub").textContent = `v${APP_VERSION} · ${PATCH_NOTES[0].title} 외 버전별 업데이트 내역`;
+    $("ts-ver").textContent = `v${APP_VERSION}`;
+  }
 
   function drawLog() {
     const curHist = PROG.history, live = !PROG.broken && (curHist.length || G.clock > DAY_START + 0.5);
@@ -5839,6 +6411,8 @@ var Sisyphe = (() => {
   $("ts-log").onclick = () => showTitleView("log");
   $("ts-tutorial").onclick = startTutorial;
   $("ts-settings").onclick = () => showTitleView("settings");
+  $("ts-patch").onclick = () => showTitleView("patch");
+  patchBadge();
   $("ts-fx-link").onclick = () => showTitleView("settings");
   // 마우스 · 트랙패드가 없는 터치 기기이거나 화면이 좁으면 PC 전용 안내를 빨갛게 덧붙인다
   function checkDevice() {
@@ -5862,6 +6436,7 @@ var Sisyphe = (() => {
       else if (k === "l") { e.preventDefault(); showTitleView("log"); }
       else if (k === "t") { e.preventDefault(); startTutorial(); }
       else if (k === "s") { e.preventDefault(); showTitleView("settings"); }
+      else if (k === "p") { e.preventDefault(); showTitleView("patch"); }
       return;
     }
     if (e.key === "Escape" && !G.busy && !G.broken && $("endbox").hidden && $("burnbox").hidden && !(e.target.closest && e.target.closest("input,select,textarea,#code"))) showTitle();
